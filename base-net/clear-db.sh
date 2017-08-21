@@ -6,7 +6,10 @@ while [ $i -lt 5 ]
   do
   cd $CURRENT_DIR
   cd artifacts/fabric-ca-server/org$i
-  sudo rm -r msp
+  if [ -d './msp' ];then
+    sudo rm -r msp
+  fi
+
   # cd artifacts/crypto-config/peerOrganizations/org$i.example.com/ca/
   if [ -f *.db ];then
     sudo rm *db
