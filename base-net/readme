@@ -1,0 +1,9 @@
+========生成证书====
+运行generateArtifacts脚本
+重启计算机
+
+
+========普通测试=======
+运行clear-db.sh删除ca证书目录的db
+运行runAPP.sh
+运行testAPIS
