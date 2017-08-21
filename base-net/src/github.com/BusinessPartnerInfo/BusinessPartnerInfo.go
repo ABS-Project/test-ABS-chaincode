@@ -16,22 +16,27 @@ import (
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
-var logger = shim.NewLogger("BondsBashInfo")
+var logger = shim.NewLogger("BusinessPartnerInfo")
 
 // SimpleChaincode example simple Chaincode implementation
 type SimpleChaincode struct {
 }
 
 // ============================================================================================================================
-// BondsBashInfo struct
+// BusinessPartnerInfo struct
 // ============================================================================================================================
-type UserStruct struct {
-
+type BusinessPartnerInfo struct {
+	UserName             string `json:"UserName"`
+	Organization         string `json:"Organization"`
+	Company              string `json:"Company"`
+	Account              string `json:"Account"`
+	CreatedTime          time.Time `json:"CreatedTime"`
+	OperateLog         []string `json:"OperateLog"`
 }
 
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
-	logger.Info("########### BondsBashInfo Init ###########")
+	logger.Info("########### BusinessPartnerInfo Init ###########")
 	return shim.Success(nil)
 
 
@@ -42,37 +47,37 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Info("########### example_cc0 Invoke ###########")
 
 	function, args := stub.GetFunctionAndParameters()
-  if function == "addBonds" {
+  if function == "add" {
 		// Deletes an entity from its state
-		return t.addBonds(stub, args)
+		return t.add(stub, args)
 	}
 
-	if function == "deleteBonds" {
+	if function == "delete" {
 		// Deletes an entity from its state
-		return t.deleteBonds(stub, args)
+		return t.delete(stub, args)
 	}
 
-	if function == "queryBonds" {
+	if function == "query" {
 		// queries an entity state
-		return t.queryBonds(stub, args)
+		return t.query(stub, args)
 	}
-	if function == "updateBonds" {
+	if function == "update" {
 		// Deletes an entity from its state
-		return t.updateBonds(stub, args)
+		return t.update(stub, args)
 	}
 
 	logger.Errorf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0])
 	return shim.Error(fmt.Sprintf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0]))
 }
 
-func (t *SimpleChaincode) addBonds(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 
         return shim.Success(nil);
 }
 
 // Deletes an entity from state
-func (t *SimpleChaincode) deleteBonds(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
@@ -82,14 +87,14 @@ func (t *SimpleChaincode) deleteBonds(stub shim.ChaincodeStubInterface, args []s
 }
 
 // Query callback representing the query of a chaincode
-func (t *SimpleChaincode) queryBonds(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
 	}
 }
 
-func (t *SimpleChaincode) updateBonds(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *SimpleChaincode) update(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 
         return shim.Success(nil);
