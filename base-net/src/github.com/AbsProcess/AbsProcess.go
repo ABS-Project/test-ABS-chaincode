@@ -21,23 +21,16 @@ var logger = shim.NewLogger("AbsProcess")
 type AbsProcess struct {
   }
 
-	// ============================================================================================================================
-	// ClaimsPackageInfo struct:
-	// 包含所有信息的struct
-	type ClaimsPackageInfoStruct struct {
 
-	  InitClaimsPackageInfo    InitClaimsPackageInfoStruct  `json:"InitClaimsPackageInfo"`
-	  SaleAgreement            SaleAgreementStruct        `json:"SaleAgreement"`
-	  GuaranteeAgrement        GuaranteeAgrementStruct    `json:"GuaranteeAgrement"`
-	  ProductDesignAgreement   ProductDesignAgreementStruct   `json:"ProductDesignAgreement"`
-	  AssetRatingInstruction   AssetRatingInstructionStruct   `json:"AssetRatingInstruction"`
-	  AccountOpinion           AccountOpinionStruct          `json:"AccountOpinion"`
-	  LegalOpinion             LegalOpinionStruct   `json:"LegalOpinion"`
-	  ProductPlanInstruction   ProductPlanInstructionStruct   `json:"ProductPlanInstruction"`
-	  InferiorAssetSubscriptionAgreement    InferiorAssetSubscriptionAgreementStruct   `json:"InferiorAssetSubscriptionAgreement"`
-	  SubprimeAssetSubscriptionAgreement    SubprimeAssetSubscriptionAgreementStruct   `json:"SubprimeAssetSubscriptionAgreement"`
-	  PriorityAssetSubscriptionAgreement    PriorityAssetSubscriptionAgreementStruct   `json:"PriorityAssetSubscriptionAgreement"`
-		Status    string `json:"Status"`
+// ============================================================================================================================
+// TransferRecord  struct:
+// 包含所有信息的struct
+	type TransferRecordStruct struct {
+		WaterFlowNumber      string  `json:"WaterFlowNumber"`
+    WaterFlowNumberTime  string  `json:"WaterFlowNumberTime"`
+		FromAccount          string  `json:"FromAccount"`
+		ToAccount            string  `json:"ToAccount"`
+		BbMount              float64 `json:"BbMount"`
 	}
 
 // ============================================================================================================================
@@ -63,22 +56,34 @@ func (t *AbsProcess) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	// Handle different functions
 	if function == "init" {
 		return t.Init(stub)
-	} else if function == "add" { //add a new job
-		return t.Add(stub, args)
-	} else if function == "delete" { //deletes an job from its state
-		return t.Delete(stub, args)
-	} else if function == "edit" { //change the infor of the job
-		return t.Edit(stub, args)
-	} else if function == "addTX" { //add a new TX
-		return t.AddTX(stub, args)
-	} else if function == "addTotalApplied" { //add 1 when a student applied the job
-		return t.AddTotalApplied(stub, args)
-	} else if function == "addTotalWaitCheck" { //add 1 when auto check not passed
-		return t.AddTotalWaitCheck(stub, args)
-	} else if function == "addTotalHired" { //add 1 when auto check passed or agency check passed
-		return t.AddTotalHired(stub, args)
-	} else if function == "addTotalSettled" { //add 1 when auto settle passed or agency settle passed
-		return t.AddTotalSettled(stub, args)
+	} else if function == "assetSaleAgreementUpload" {
+		return t.assetSaleAgreementUpload(stub, args)
+	} else if function == "guaranteeAgreementUpload" {
+		return t.guaranteeAgreementUpload(stub, args)
+	} else if function == "trustManageementUpload" {
+		return t.trustManageementUpload(stub, args)
+	} else if function == "assetRatingInstructionUpload" {
+		return t.assetRatingInstructionUpload(stub, args)
+	} else if function == "accountOpinionUpload" {
+		return t.accountOpinionUpload(stub, args)
+	} else if function == "counselOpinionUpload" {
+		return t.counselOpinionUpload(stub, args)
+	} else if function == "productPlanInstructionUpload" {
+		return t.productPlanInstructionUpload(stub, args)
+	} else if function == "inferiorAssetObtain" {
+		return t.inferiorAssetObtain(stub, args)
+	}else if function == "inferiorAssetObtainRecording" {
+		return t.inferiorAssetObtainRecording(stub, args)
+	}else if function == "subprimeAssetObtain" {
+		return t.subprimeAssetObtain(stub, args)
+	}else if function == "subprimeAssetsObtainRecording" {
+		return t.subprimeAssetsObtainRecording(stub, args)
+	}else if function == "priorityAssetObtain" {
+		return t.priorityAssetObtain(stub, args)
+	}else if function == "priorityAssetObtainRecording" {
+		return t.priorityAssetObtainRecording(stub, args)
+	}else if function == "breakAccountRecording" {
+		return t.breakAccountRecording(stub, args)
 	}
 
 	return shim.Error("Received unknown function invocation")
@@ -88,20 +93,20 @@ func (t *AbsProcess) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 // function:发起人上传资产买卖协议（url和hash值）
 // input：ProductName,ulr,hash
 // ============================================================================================================================
-func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *AbsProcess) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
-	ProductName = arg[0]
-	Url = arg[1]
-	Hashcode = arg[2]
+	ProductName := args[0]
+	Url := args[1]
+	Hashcode := args[2]
 
 	currentStatus, err := checkStatus(ProductName)
 	if currentStatus != "ProInfoUpload" {
 		return shim.Error("status is worry! Expect: ProInfoUpload")
 	}
 
-  _, err = agreementUpload(ProductName, SaleAgreement, Url, Hashcode)
+  err = agreementUpload(ProductName, SaleAgreement, Url, Hashcode)
 	if err != nil {
 		return shim.Error("Fail to upload agreement")
 	}
@@ -118,20 +123,20 @@ func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterf
 // function:差额补足人上传差额补足协议（url和hash值）
 // input：ProductName,ulr,hash
 // ============================================================================================================================
-func (t *SimpleChaincode) guaranteeAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *AbsProcess) guaranteeAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
-	ProductName = arg[0]
-	Url = arg[1]
-	Hashcode = arg[2]
+	ProductName := args[0]
+	Url := args[1]
+	Hashcode := args[2]
 
 	currentStatus, err := checkStatus(ProductName)
 	if currentStatus != "AssetSaleAgreementUpload" {
 		return shim.Error("status is worry! Expect: AssetSaleAgreementUpload")
 	}
 
-  _, err = agreementUpload(ProductName, GuaranteeAgrement, Url, Hashcode)
+  err = agreementUpload(ProductName, GuaranteeAgrement, Url, Hashcode)
 	if err != nil {
 		return shim.Error("Fail to upload agreement")
 	}
@@ -148,20 +153,20 @@ func (t *SimpleChaincode) guaranteeAgreementUpload(stub shim.ChaincodeStubInterf
 // function:spv上传产品设计书（url和hash值）
 // input：ProductName,ulr,hash
 // ============================================================================================================================
-func (t *SimpleChaincode) trustManageementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *AbsProcess) trustManageementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
-	ProductName = arg[0]
-	Url = arg[1]
-	Hashcode = arg[2]
+	ProductName := args[0]
+	Url := args[1]
+	Hashcode := args[2]
 
 	currentStatus, err := checkStatus(ProductName)
 	if currentStatus != "GuaranteeAgreementUpload" {
 		return shim.Error("status is worry! Expect: GuaranteeAgreementUpload")
 	}
 
-  _, err = agreementUpload(ProductName, ProductDesignAgreement, Url, Hashcode)
+  err = agreementUpload(ProductName, ProductDesignAgreement, Url, Hashcode)
 	if err != nil {
 		return shim.Error("Fail to upload agreement")
 	}
@@ -178,18 +183,18 @@ func (t *SimpleChaincode) trustManageementUpload(stub shim.ChaincodeStubInterfac
 // function:资产评级机构上传资产评级报告（url和hash值，资产评级信息）
 // input：ProductName,ulr,hash，PriorityAssetRatio，SubprimeAssetRatio，InferiorAssetRatio，PriorityAssetRating，SubprimeAssetsRating
 // ============================================================================================================================
-func (t *SimpleChaincode) assetRatingInstructionUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *AbsProcess) assetRatingInstructionUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 9 {
 		return shim.Error("Incorrect number of arguments. Expecting 10")
 	}
-	ProductName = arg[0]
-	Url = arg[1]
-	Hashcode = arg[2]
-	PriorityAssetRatio = arg[4]
-	SubprimeAssetRatio = arg[5]
-	InferiorAssetRatio = arg[6]
-	PriorityAssetRating = arg[7]
-	SubprimeAssetsRating = arg[8]
+	ProductName := args[0]
+	Url := args[1]
+	Hashcode := args[2]
+	PriorityAssetRatio := args[4]
+	SubprimeAssetRatio := args[5]
+	InferiorAssetRatio := args[6]
+	PriorityAssetRating := args[7]
+	SubprimeAssetsRating := args[8]
 
 	currentStatus, err := checkStatus(ProductName)
 	if currentStatus != "TrustManageementUpload" {
@@ -232,20 +237,20 @@ func (t *SimpleChaincode) assetRatingInstructionUpload(stub shim.ChaincodeStubIn
 // function:会计事务所上传会计审计报告（url和hash值）
 // input：ProductName,ulr,hash
 // ============================================================================================================================
-func (t *SimpleChaincode) accountOpinionUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *AbsProcess) accountOpinionUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
-	ProductName = arg[0]
-	Url = arg[1]
-	Hashcode = arg[2]
+	ProductName := args[0]
+	Url := args[1]
+	Hashcode := args[2]
 
 	currentStatus, err := checkStatus(ProductName)
 	if currentStatus != "AssetRatingInstructionUpload" {
 		return shim.Error("status is worry! Expect: AssetRatingInstructionUpload")
 	}
 
-  _, err = agreementUpload(ProductName, AccountOpinion, Url, Hashcode)
+  err = agreementUpload(ProductName, AccountOpinion, Url, Hashcode)
 	if err != nil {
 		return shim.Error("Fail to upload agreement")
 	}
@@ -262,20 +267,20 @@ func (t *SimpleChaincode) accountOpinionUpload(stub shim.ChaincodeStubInterface,
 // function:律师事务所上传法律意见书（url和hash值）
 // input：ProductName,ulr,hash
 // ============================================================================================================================
-func (t *SimpleChaincode) counselOpinionUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *AbsProcess) counselOpinionUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
-	ProductName = arg[0]
-	Url = arg[1]
-	Hashcode = arg[2]
+	ProductName := args[0]
+	Url := args[1]
+	Hashcode := args[2]
 
 	currentStatus, err := checkStatus(ProductName)
 	if currentStatus != "AccountOpinionUpload" {
 		return shim.Error("status is worry! Expect: AccountOpinionUpload")
 	}
 
-  _, err = agreementUpload(ProductName, LegalOpinion, Url, Hashcode)
+  err = agreementUpload(ProductName, LegalOpinion, Url, Hashcode)
 	if err != nil {
 		return shim.Error("Fail to upload agreement")
 	}
@@ -292,20 +297,20 @@ func (t *SimpleChaincode) counselOpinionUpload(stub shim.ChaincodeStubInterface,
 // function：spv上传产品计划说明书（url和hash值）
 // input：ProductName,ulr,hash
 // ============================================================================================================================
-func (t *SimpleChaincode) productPlanInstructionUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *AbsProcess) productPlanInstructionUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
-	ProductName = arg[0]
-	Url = arg[1]
-	Hashcode = arg[2]
+	ProductName := args[0]
+	Url := args[1]
+	Hashcode := args[2]
 
 	currentStatus, err := checkStatus(ProductName)
 	if currentStatus != "CounselOpinionUpload" {
 		return shim.Error("status is worry! Expect: CounselOpinionUpload")
 	}
 
-  _, err = agreementUpload(ProductName, ProductPlanInstruction, Url, Hashcode)
+  err = agreementUpload(ProductName, ProductPlanInstruction, Url, Hashcode)
 	if err != nil {
 		return shim.Error("Fail to upload agreement")
 	}
@@ -322,20 +327,20 @@ func (t *SimpleChaincode) productPlanInstructionUpload(stub shim.ChaincodeStubIn
 // function:劣后级资产购买方上传资产买卖协议（url和hash值）
 // input：ProductName,ulr,hash
 // ============================================================================================================================
-func (t *SimpleChaincode) inferiorAssetObtain(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *AbsProcess) inferiorAssetObtain(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
-	ProductName = arg[0]
-	Url = arg[1]
-	Hashcode = arg[2]
+	ProductName := args[0]
+	Url := args[1]
+	Hashcode := args[2]
 
 	currentStatus, err := checkStatus(ProductName)
 	if currentStatus != "ProductPlanInstructionUpload" {
 		return shim.Error("status is worry! Expect: ProductPlanInstructionUpload")
 	}
 
-  _, err = agreementUpload(ProductName, InferiorAssetSubscriptionAgreement, Url, Hashcode)
+  err = agreementUpload(ProductName, InferiorAssetSubscriptionAgreement, Url, Hashcode)
 	if err != nil {
 		return shim.Error("Fail to upload agreement")
 	}
@@ -348,23 +353,30 @@ func (t *SimpleChaincode) inferiorAssetObtain(stub shim.ChaincodeStubInterface, 
 	return shim.Success(nil)
 }
 
-
-
 // ============================================================================================================================
-// function:代币节点记录转账
-// input：ProductName,
+// function:代币节点记录转账:劣后级认购
+// input：ProductName,WaterFlowNumber, WaterFlowNumberTime, FromAccount, ToAccount string, BbMount float64
 // ============================================================================================================================
-func (t *SimpleChaincode) InferiorAssetObtainRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 3 {
-		return shim.Error("Incorrect number of arguments. Expecting 3")
+func (t *AbsProcess) inferiorAssetObtainRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 6 {
+		return shim.Error("Incorrect number of arguments. Expecting 6")
+	}
+	ProductName := args[0]
+  WaterFlowNumber := args[1]
+	WaterFlowNumberTime := args[2]
+	FromAccount := args[3]
+	ToAccount := args[4]
+	BbMount := args[5]
+
+  currentStatus, err := checkStatus(ProductName)
+	if currentStatus != "InferiorAssetObtain" {
+		return shim.Error("status is worry! Expect: InferiorAssetObtain")
 	}
 
-
-	currentStatus, err := checkStatus(ProductName)
-	if currentStatus != "ProductPlanInstructionUpload" {
-		return shim.Error("status is worry! Expect: ProductPlanInstructionUpload")
+	err = addTransfeRecord(ProductName, WaterFlowNumber, WaterFlowNumberTime, FromAccount, ToAccount, BbMount)
+  if err != nil{
+		return shim.Error(err)
 	}
-
 
 	_, err = changeStatus(ProductName)
 	if err != nil {
@@ -378,20 +390,20 @@ func (t *SimpleChaincode) InferiorAssetObtainRecording(stub shim.ChaincodeStubIn
 // function:次优级资产购买方（url和hash值）
 // input：ProductName,ulr,hash
 // ============================================================================================================================
-func (t *SimpleChaincode) subprimeAssetObtain(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *AbsProcess) subprimeAssetObtain(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
-	ProductName = arg[0]
-	Url = arg[1]
-	Hashcode = arg[2]
+	ProductName := args[0]
+	Url := args[1]
+	Hashcode := args[2]
 
 	currentStatus, err := checkStatus(ProductName)
 	if currentStatus != "InferiorAssetObtainRecording" {
 		return shim.Error("status is worry! Expect: InferiorAssetObtainRecording")
 	}
 
-  _, err = agreementUpload(ProductName, SubprimeAssetSubscriptionAgreement, Url, Hashcode)
+  err = agreementUpload(ProductName, SubprimeAssetSubscriptionAgreement, Url, Hashcode)
 	if err != nil {
 		return shim.Error("Fail to upload agreement")
 	}
@@ -405,36 +417,56 @@ func (t *SimpleChaincode) subprimeAssetObtain(stub shim.ChaincodeStubInterface, 
 }
 
 // ============================================================================================================================
-// function:代币节点记录转账
+// function:代币节点记录转账：次优级认购
 // input：
 // ============================================================================================================================
-func (t *SimpleChaincode) SubprimeAssetsObtainRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 3 {
-		return shim.Error("Incorrect number of arguments. Expecting 3")
+func (t *AbsProcess) subprimeAssetsObtainRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 6 {
+		return shim.Error("Incorrect number of arguments. Expecting 6")
 	}
-	currentStatus, err := checkStatus(ProductName)
+	ProductName := args[0]
+  WaterFlowNumber := args[1]
+	WaterFlowNumberTime := args[2]
+	FromAccount := args[3]
+	ToAccount := args[4]
+	BbMount := args[5]
 
-	changeStatus(ProductName)
+  currentStatus, err := checkStatus(ProductName)
+	if currentStatus != "SubprimeAssetObtain" {
+		return shim.Error("status is worry! Expect: SubprimeAssetObtain")
+	}
+
+	err = addTransfeRecord(ProductName, WaterFlowNumber, WaterFlowNumberTime, FromAccount, ToAccount, BbMount)
+  if err != nil{
+		return shim.Error(err)
+	}
+
+	_, err = changeStatus(ProductName)
+	if err != nil {
+		return shim.Error("Fail to change status")
+	}
+
+	return shim.Success(nil)
 }
 
 // ============================================================================================================================
 // function:优先级资产购买方（url和hash值）
 // input：ProductName,ulr,hash
 // ============================================================================================================================
-func (t *SimpleChaincode) PriorityAssetObtain(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *AbsProcess) priorityAssetObtain(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
-	ProductName = arg[0]
-	Url = arg[1]
-	Hashcode = arg[2]
+	ProductName := args[0]
+	Url := args[1]
+	Hashcode := args[2]
 
 	currentStatus, err := checkStatus(ProductName)
 	if currentStatus != "SubprimeAssetsObtainRecording" {
 		return shim.Error("status is worry! Expect: SubprimeAssetsObtainRecording")
 	}
 
-  _, err = agreementUpload(ProductName, PriorityAssetSubscriptionAgreement, Url, Hashcode)
+  err = agreementUpload(ProductName, PriorityAssetSubscriptionAgreement, Url, Hashcode)
 	if err != nil {
 		return shim.Error("Fail to upload agreement")
 	}
@@ -448,29 +480,69 @@ func (t *SimpleChaincode) PriorityAssetObtain(stub shim.ChaincodeStubInterface, 
 }
 
 // ============================================================================================================================
-// function:代币节点记录转账
+// function:代币节点记录转账：优先级认购
 // input：ProductName
 // ============================================================================================================================
-func (t *SimpleChaincode) PriorityAssetObtainRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 3 {
-		return shim.Error("Incorrect number of arguments. Expecting 3")
+func (t *AbsProcess) priorityAssetObtainRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 6 {
+		return shim.Error("Incorrect number of arguments. Expecting 6")
 	}
-	currentStatus, err := checkStatus(ProductName)
+	ProductName := args[0]
+  WaterFlowNumber := args[1]
+	WaterFlowNumberTime := args[2]
+	FromAccount := args[3]
+	ToAccount := args[4]
+	BbMount := args[5]
 
-	changeStatus(ProductName)
+  currentStatus, err := checkStatus(ProductName)
+	if currentStatus != "PriorityAssetObtain" {
+		return shim.Error("status is worry! Expect: PriorityAssetObtain")
+	}
+
+	err = addTransfeRecord(ProductName, WaterFlowNumber, WaterFlowNumberTime, FromAccount, ToAccount, BbMount)
+  if err != nil{
+		return shim.Error(err)
+	}
+
+	_, err = changeStatus(ProductName)
+	if err != nil {
+		return shim.Error("Fail to change status")
+	}
+
+	return shim.Success(nil)
 }
 
 // ============================================================================================================================
-// function:代币节点记录转账
+// function:代币节点记录转账：分帐
 // input：ProductName
 // ============================================================================================================================
-func (t *SimpleChaincode) BreakAccountRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 3 {
-		return shim.Error("Incorrect number of arguments. Expecting 3")
+func (t *AbsProcess) breakAccountRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 6 {
+		return shim.Error("Incorrect number of arguments. Expecting 6")
 	}
-	currentStatus, err := checkStatus(ProductName)
+	ProductName := args[0]
+  WaterFlowNumber := args[1]
+	WaterFlowNumberTime := args[2]
+	FromAccount := args[3]
+	ToAccount := args[4]
+	BbMount := args[5]
 
-	changeStatus(ProductName)
+  currentStatus, err := checkStatus(ProductName)
+	if currentStatus != "PriorityAssetObtainRecording" {
+		return shim.Error("status is worry! Expect: PriorityAssetObtainRecording")
+	}
+
+	err = addTransfeRecord(ProductName, WaterFlowNumber, WaterFlowNumberTime, FromAccount, ToAccount, BbMount)
+  if err != nil{
+		return shim.Error(err)
+	}
+
+	_, err = changeStatus(ProductName)
+	if err != nil {
+		return shim.Error("Fail to change status")
+	}
+
+	return shim.Success(nil)
 }
 
 
@@ -478,7 +550,8 @@ func (t *SimpleChaincode) BreakAccountRecording(stub shim.ChaincodeStubInterface
 // function:检查当前的业务状态
 // input：ProductName
 // ============================================================================================================================
-func checkStatus(stub shim.ChaincodeStubInterface , ProductName string) (string, err){
+func checkStatus(ProductName string) (string, err error){
+
 	ClaimsPackageInfoAsBytes, err :=  stub.Getstatus(ProductName)
 	if err != nil {
 		return nil, err
@@ -493,7 +566,8 @@ func checkStatus(stub shim.ChaincodeStubInterface , ProductName string) (string,
 // function:根据当前的业务状态转换到下一个状态
 // input：ProductName
 // ============================================================================================================================
-func changeStatus(stub shim.ChaincodeStubInterface , ProductName string) (string, err) {
+func (t *AbsProcess) changeStatus(ProductName string) (string, err error) {
+
 	process := []string{"ProInfoUpload","AssetSaleAgreementUpload","GuaranteeAgreementUpload","TrustManageementUpload","AssetRatingInstructionUpload","AccountOpinionUpload","CounselOpinionUpload","ProductPlanInstructionUpload","InferiorAssetObtain","InferiorAssetObtainRecording","SubprimeAssetObtain","SubprimeAssetsObtainRecording","PriorityAssetObtain","PriorityAssetObtainRecording","BreakAccountRecording"}
 	currentStatus, err := checkStatus(ProductName)
 	for i, status := range process {
@@ -524,10 +598,11 @@ func changeStatus(stub shim.ChaincodeStubInterface , ProductName string) (string
 	return ClaimsPackageInfo.Status, nil
 }
 
-func agreementUpload(stub shim.ChaincodeStubInterface , ProductName string, AgreementName string, Url string, Hashcode string) (string, err) {
+func (t *AbsProcess) agreementUpload(ProductName string, AgreementName string, Url string, Hashcode string) (err error) {
+
 	ClaimsPackageInfoAsBytes, err :=  stub.Getstatus(ProductName)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	ClaimsPackageInfo := ClaimsPackageInfoStruct{}
 
@@ -537,12 +612,39 @@ func agreementUpload(stub shim.ChaincodeStubInterface , ProductName string, Agre
 
   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfo)
 	if err != nil {
-		return nil, err
+		return err
 	}
   err = stub.PutState(ProductName, ClaimsPackageInfoAsBytes)
   if err != nil{
-		return nil, err
+		return err
 	}
 
-	return "upload agreement successfully", nil
+	return nil
+}
+
+func (t *AbsProcess) addTransfeRecord(ProductName, WaterFlowNumber, WaterFlowNumberTime, FromAccount, ToAccount string, BbMount float64) (err error) {
+
+	TransfeRecordAsBytes, err :=  stub.Getstatus(ProductName)
+	if err != nil {
+		return err
+	}
+	TransfeRecordInfo := TransferRecordStruct{}
+
+	json.Unmarshal(TransfeRecordAsBytes, &TransfeRecordInfo)
+  TransfeRecordInfo.WaterFlowNumber =  Url
+	TransfeRecordInfo.WaterFlowNumberTime =  Hashcode
+  TransfeRecordInfo.FromAccount = FromAccount
+	TransfeRecordInfo.ToAccount = FromAccount
+	TransfeRecordInfo.BbMount = FromAccount
+
+  TransfeRecordAsBytes, err = json.Marshal(TransfeRecordInfo)
+	if err != nil {
+		return err
+	}
+  err = stub.PutState(ProductName, TransfeRecordAsBytes)
+  if err != nil{
+		return err
+	}
+
+	return err
 }
