@@ -7,3 +7,7 @@
 运行clear-db.sh删除ca证书目录的db
 运行runAPP.sh
 运行testAPIS
+
+
+========链码名称对应==========
+bpinfo-----BusinessPartnerInfo.go
