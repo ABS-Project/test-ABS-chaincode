@@ -81,7 +81,7 @@ curl -s -X POST \
 }'
 echo
 echo
-mycc
+BusinessPartnerInfo
 echo "POST request Join channel on Org2"
 echo
 curl -s -X POST \
@@ -126,7 +126,7 @@ curl -s -X POST \
   -H "content-type: application/json" \
   -d '{
 	"peers": ["localhost:7051","localhost:7056"],
-	"chaincodeName":"mycc",
+	"chaincodeName":"BusinessPartnerInfo",
 	"chaincodePath":"github.com/BusinessPartnerInfo",
 	"chaincodeVersion":"v0"
 }'
@@ -142,7 +142,7 @@ curl -s -X POST \
   -H "content-type: application/json" \
   -d '{
 	"peers": ["localhost:8051","localhost:8056"],
-	"chaincodeName":"mycc",
+	"chaincodeName":"BusinessPartnerInfo",
 	"chaincodePath":"github.com/BusinessPartnerInfo",
 	"chaincodeVersion":"v0"
 }'
@@ -157,7 +157,7 @@ curl -s -X POST \
   -H "content-type: application/json" \
   -d '{
 	"peers": ["localhost:9051","localhost:9056"],
-	"chaincodeName":"mycc",
+	"chaincodeName":"BusinessPartnerInfo",
 	"chaincodePath":"github.com/BusinessPartnerInfo",
 	"chaincodeVersion":"v0"
 }'
@@ -172,7 +172,7 @@ curl -s -X POST \
   -H "content-type: application/json" \
   -d '{
 	"peers": ["localhost:10051","localhost:10056"],
-	"chaincodeName":"mycc",
+	"chaincodeName":"BusinessPartnerInfo",
 	"chaincodePath":"github.com/BusinessPartnerInfo",
 	"chaincodeVersion":"v0"
 }'
@@ -184,7 +184,7 @@ curl -s -X POST \
   -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json" \
   -d '{
-	"chaincodeName":"mycc",
+	"chaincodeName":"BusinessPartnerInfo",
 	"chaincodeVersion":"v0",
 	"functionName":"init",
 	"args":[]
@@ -196,20 +196,34 @@ echo "POST invoke chaincode on peers of Org2"
 echo "POST add BusinessPartnerInfo"
 echo
 TRX_ID=$(curl -s -X POST \
-  http://localhost:4000/channels/mychannel/chaincodes/mycc \
+  http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo \
   -H "authorization: Bearer $ORG2_TOKEN" \
   -H "content-type: application/json" \
   -d '{
 	"peers": ["localhost:8051"],
 	"fcn":"add",
-	"args":["{\"UserName\":\"abc\",\"Organization\":\"律师事务所\",\"Company\":\"A律所\",\"Account\":\"23456789\",\"OperateLog\":[\"1\",\"2\",\"3\",\"4\"]}"]
+	"args":["{\"UserName\":\"zlls\",\"Organization\":\"律师事务所\",\"Company\":\"北京市中伦律师事务所\",\"Account\":\"zlls124\"}"]
 }')
 echo "Transacton ID is $TRX_ID"
 echo
+echo "POST invoke chaincode on peers of Org2"
+echo "POST add BusinessPartnerInfo"
+echo
+TRX_ID=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo \
+  -H "authorization: Bearer $ORG2_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["localhost:8051"],
+	"fcn":"update",
+	"args":["{\"UserName\":\"zlls\",\"Organization\":\"律师事务所\",\"Company\":\"北京市中伦律师事务所\",\"Account\":\"zlls666\"}"]
+}')
+echo "Transacton ID is $TRX_ID"
+
 echo "GET query chaincode on peer1 of Org1"
 echo
 curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/mycc?peer=peer1&fcn=query&args=%5B%22abc%22%5D" \
+  "http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo?peer=peer1&fcn=query&args=%5B%22zlls%22%5D" \
   -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json"
 echo
