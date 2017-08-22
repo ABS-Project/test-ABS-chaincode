@@ -25,6 +25,7 @@ ClaimsPackageInfo数据结构定义，主要是响应第一步资产上传操作
 							"Hashcode":""
 				 },
 			  "Remark":""
+				"CreatedTime":""
 		},
 	  "SaleAgreement":{
 				"Url":"",

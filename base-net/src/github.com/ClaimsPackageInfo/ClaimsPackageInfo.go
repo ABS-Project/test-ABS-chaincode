@@ -63,6 +63,7 @@ type InitClaimsPackageInfoStruct struct {
   AccountancyFee          float64 `json:"AccountancyFee"`
   BasicCreditorInfo       BasicCreditorInfoStruct   `json:"BasicCreditorInfo"`
   Remark                  string `json:"Remark"`
+	CreatedTime          time.Time `json:"CreatedTime"`
 }
 //债权基础信息
 type BasicCreditorInfoStruct struct{
@@ -145,8 +146,6 @@ type PriorityAssetSubscriptionAgreementStruct struct{
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 	logger.Info("########### ClaimsPackageInfo Init ###########")
 	return shim.Success(nil)
-
-
 }
 
 // Transaction makes payment of X units from A to B
@@ -178,9 +177,30 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 }
 
 func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-
-
-        return shim.Success(nil);
+	var err error
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 2. ")
+	}
+	var InitClaimsPackageInfoObj InitClaimsPackageInfoStruct
+	InitClaimsPackageInfo :=args[0]
+	err = json.Unmarshal([]byte(InitClaimsPackageInfo),&InitClaimsPackageInfoObj)
+	if err != nil {
+	fmt.Println("error:", err)
+	return shim.Error(err.Error())
+	 }
+	ProductName := InitClaimsPackageInfoObj.ProductName
+	UserTest, _ := stub.GetState(ProductName)
+	if UserTest != nil {
+		return shim.Error("the user is existed")
+	}
+	timestamp, _:= stub.GetTxTimestamp()
+	PartnerInfoObj.CreatedTime = time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
+	jsonAsBytes,_:= json.Marshal(PartnerInfoObj)
+	err = stub.PutState(ProductName,[]byte(jsonAsBytes))
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(nil);
 }
 
 // Deletes an entity from state
