@@ -9,6 +9,7 @@ package main
 
 import (
 	"fmt"
+	"encoding/json"
 	// "strconv"
   "time"
 
@@ -25,7 +26,7 @@ type SimpleChaincode struct {
 // ============================================================================================================================
 // BusinessPartnerInfo struct
 // ============================================================================================================================
-type BusinessPartnerInfo struct {
+type BusinessPartnerInfoStruct struct {
 	UserName             string `json:"UserName"`
 	Organization         string `json:"Organization"`
 	Company              string `json:"Company"`
@@ -33,6 +34,7 @@ type BusinessPartnerInfo struct {
 	CreatedTime          time.Time `json:"CreatedTime"`
 	OperateLog           []string `json:"OperateLog"`
 }
+
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 	logger.Info("########### BusinessPartnerInfo Init ###########")
@@ -70,9 +72,30 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 }
 
 func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-
-
-        return shim.Success(nil);
+	var err error
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 2. ")
+	}
+  var PartnerInfoObj BusinessPartnerInfoStruct
+	PartnerInfo :=args[0]
+  err = json.Unmarshal([]byte(PartnerInfo),&PartnerInfoObj)
+	if err != nil {
+	fmt.Println("error:", err)
+	return shim.Error(err.Error())
+	 }
+	UserName := PartnerInfoObj.UserName
+	UserTest, _ := stub.GetState(UserName)
+	if UserTest != nil {
+		return shim.Error("the user is existed")
+	}
+	timestamp, _:= stub.GetTxTimestamp()
+	PartnerInfoObj.CreatedTime = time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
+	jsonAsBytes,_:= json.Marshal(PartnerInfoObj)
+	err = stub.PutState(UserName,[]byte(jsonAsBytes))
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+  return shim.Success(nil);
 }
 
 // Deletes an entity from state
@@ -80,9 +103,8 @@ func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
+return shim.Success(nil);
 
-
-	return shim.Success(nil)
 }
 
 // Query callback representing the query of a chaincode
@@ -91,7 +113,18 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
 	 }
-	 return shim.Success(nil);
+	 UserName := args[0]
+ 	UserInfo, err := stub.GetState(UserName)
+ if err != nil {
+ 	jsonResp := "{\"Error\":\"Failed to get state for " + UserName + "\"}"
+ 	return shim.Error(jsonResp)
+  }
+ if UserInfo == nil {
+ 	jsonResp := "{\"Error\":\"Nil content for " + UserName + "\"}"
+ 	return shim.Error(jsonResp)
+  }
+ return shim.Success(UserInfo)
+
 }
 
 func (t *SimpleChaincode) update(stub shim.ChaincodeStubInterface, args []string) pb.Response {
