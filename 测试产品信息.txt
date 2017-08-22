@@ -1,0 +1,35 @@
+ProductName	 	 				String	产品名称	-->"钱包汇通第一期保理ABS"
+ProductType						String	产品类型	-->"信托计划"
+BasicAssets						String	基础资产	-->"400000000"
+ProjectScale					Float64	项目规模	-->400000000
+Originators						String	原始债权人	-->”qbht“ (钱包汇通保理公司)
+Investor						String	投资方		-->”qbjf,shyh,zrj“(钱包金服 上海银行 中融金)
+ExpectedReturn					String	预期收益率（1%）-->"15"
+PaymentMethod					String	支付方式	-->"按季支付"
+TrustInstitution				String	信托机构	-->”zrgj“(中融国际)
+DifferenceComplement			String	差额补足人	-->"amdq"(奥马电器)
+AssetRatingAgency				String	资产评级机构-->"zhypg"(中和宜评估)
+AccountFirm						String	会计事务所	-->“dhhs”(大华会所)
+LawOffice						String	律师事务所	-->”zlls“(中伦律所)
+TrustManagementFee				Float64	信托管理费	-->10
+AssetRatingFee					Float64	资产评级费	-->10
+CounselFee						Float64	律师费		-->100
+AccountancyFee					Float64	会计费		-->100
+BasicCreditorInfo				[]String (Url,Hashcode)	债权基础信息(即压缩包的地址和Hashcode)-->(Url:www.qianbao/cc/12,Hashcode:40b3fa8de4e01e5b37928ff03c7c6f0b)
+Remark							String	备注信息									-->"无"
+SaleAgreement					[]String(Url,Hashcode)	资产买卖协议				-->(Url:www.qianbao/cc/11,Hashcode:40b3fa8de4e01e5b37928ff03c7c6f0b)
+ProductDesignAgreement			[]String(Url,Hashcode)	产品设计书					-->(Url:www.qianbao/cc/9,Hashcode:40b3fa8de4e01e5b37928ff03c7c6f0b)
+GuaranteeAgrement				[]String(Url,Hashcode)	差额补足协议				-->(Url:www.qianbao/cc/8,Hashcode:40b3fa8de4e01e5b37928ff03c7c6f0b)
+AssetRatingInstruction			[]String(Url,Hashcode,,,,,)	资产评级说明			-->(Url:www.qianbao/cc/7,Hashcode:40b3fa8de4e01e5b37928ff03c7c6f0b)
+LegalOpinion					[]String(Url,Hashcode)	法律意见书					-->(Url:www.qianbao/cc/6,Hashcode:40b3fa8de4e01e5b37928ff03c7c6f0b)
+AccountOpinion					[]String(Url,Hashcode)	审计报告（会计事务所）		-->(Url:www.qianbao/cc/5,Hashcode:40b3ss8de4e01e5b37928ff03c7c6f0b)
+ProductPlanInstruction			[]String(Url,Hashcode)	产品计划说明书（信托机构）	-->(Url:www.qianbao/cc/1,Hashcode:40b3fa8de4e01e5b37928ff03c7c6f0b)
+PriorityAssetSubscriptionAgreement		[]String(Url,Hashcode)	优先级资产认购协议	-->(Url:www.qianbao/cc/2,Hashcode:40b3fa8de4e01e5b3792dff03c7c6f0b)
+SubprimeAssetSubscriptionAgreement		[]String(Url,Hashcode)	次优级资产认购协议	-->(Url:www.qianbao/cc/3,Hashcode:40b3fa8de4e01e0037928ff03c7c6f0b)
+InferiorAssetSubscriptionAgreement		[]String(Url,Hashcode)	劣后级资产认购协议	-->(Url:www.qianbao/cc/4,Hashcode:40b3fa8de4e01e5b37956ff03c7c6f0b)
+Status									String	产品状态（用于流程控制）			-->
+PriorityAssetRatio						String	优先级资产比例              		-->"70%"
+SubprimeAssetRatio						String	次优级资产比例						-->"20%"
+InferiorAssetRatio						String	劣后级资产比例						-->"10%"
+PriorityAssetRating						String	优先级资产评级						-->"AA"
+SubprimeAssetsRating					String	次优级资产评级						-->"A"
