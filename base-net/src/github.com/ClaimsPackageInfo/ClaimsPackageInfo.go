@@ -9,7 +9,7 @@ package main
 
 import (
 	"fmt"
-	"strconv"
+	"encoding/json"
   "time"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
@@ -44,12 +44,13 @@ type ClaimsPackageInfoStruct struct {
 // 1.spv上传产品信息
 // ============================================================================================================================
 type InitClaimsPackageInfoStruct struct {
+	ProductID               string `json:"ProductID"`
 	ProductName             string `json:"ProductName"`
 	ProductType             string `json:"ProductType"`
 	BasicAssets             string `json:"BasicAssets"`
 	ProjectScale            float64 `json:"ProjectScale"`
 	Originators             string `json:"Originators"`
-	Investor                string `json:"Investor"`
+	Investor                []string `json:"Investor"`
   ExpectedReturn          string `json:"ExpectedReturn"`
   PaymentMethod           string `json:"PaymentMethod"`
   TrustInstitution        string `json:"TrustInstitution"`
@@ -188,15 +189,18 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 	fmt.Println("error:", err)
 	return shim.Error(err.Error())
 	 }
-	ProductName := InitClaimsPackageInfoObj.ProductName
-	UserTest, _ := stub.GetState(ProductName)
-	if UserTest != nil {
-		return shim.Error("the user is existed")
+	ProductID := InitClaimsPackageInfoObj.ProductID
+	ClaimsPackageInfo, _ := stub.GetState(ProductID)
+	if ClaimsPackageInfo != nil {
+		return shim.Error("the product is existed")
 	}
 	timestamp, _:= stub.GetTxTimestamp()
-	PartnerInfoObj.CreatedTime = time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
-	jsonAsBytes,_:= json.Marshal(PartnerInfoObj)
-	err = stub.PutState(ProductName,[]byte(jsonAsBytes))
+	InitClaimsPackageInfoObj.CreatedTime = time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
+	var ClaimsPackageInfoObj ClaimsPackageInfoStruct
+	ClaimsPackageInfoObj.Status = "ProInfoUpload"
+	ClaimsPackageInfoObj.InitClaimsPackageInfo = InitClaimsPackageInfoObj
+	jsonAsBytes,_:= json.Marshal(ClaimsPackageInfoObj)
+	err = stub.PutState(ProductID,[]byte(jsonAsBytes))
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -215,10 +219,20 @@ func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string
 
 // Query callback representing the query of a chaincode
 func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
-	}
+	 }
+	 ProductID := args[0]
+ 	ClaimsPackageInfo, err := stub.GetState(ProductID)
+ if err != nil {
+ 	jsonResp := "{\"Error\":\"Failed to get state for " + ProductID + "\"}"
+ 	return shim.Error(jsonResp)
+  }
+ if ClaimsPackageInfo == nil {
+ 	jsonResp := "{\"Error\":\"Nil content for " + ProductID + "\"}"
+ 	return shim.Error(jsonResp)
+  }
+ return shim.Success(ClaimsPackageInfo)
 }
 
 func (t *SimpleChaincode) update(stub shim.ChaincodeStubInterface, args []string) pb.Response {

@@ -202,28 +202,15 @@ TRX_ID=$(curl -s -X POST \
   -d '{
 	"peers": ["localhost:8051"],
 	"fcn":"add",
-	"args":["{\"UserName\":\"zlls\",\"Organization\":\"律师事务所\",\"Company\":\"北京市中伦律师事务所\",\"Account\":\"zlls124\"}"]
+	"args":["{\"ProductID\":\"123\",\"ProductName\":\"钱包汇通第一期保理ABS\",\"ProductType\":\"信托计划\",\"BasicAssets\":\"保理车贷\",\"ProjectScale\":400000000,\"Originators\":\"qbht\",\"Investor\":[\"qbjf\",\"shyh\",\"zrj\"],\"ExpectedReturn\":\"15\",\"PaymentMethod\":\"按季付\",\"TrustInstitution\":\"zrgj\",\"DifferenceComplement\":\"amdq\",\"AssetRatingAgency\":\"zhypg\",\"AccountFirm\":\"dhhs\",\"LawOffice\":\"zlls\",\"TrustManagementFee\":10,\"AssetRatingFee\":10,\"CounselFee\":100,\"AccountancyFee\":100,\"BasicCreditorInfo\":{\"Url\":\"www.qianbao/cc/12\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"},\"Remark\":\"无\"}"]
 }')
 echo "Transacton ID is $TRX_ID"
 echo
-echo "POST invoke chaincode on peers of Org2"
-echo "POST add ClaimsPackageInfo"
-echo
-TRX_ID=$(curl -s -X POST \
-  http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
-  -H "authorization: Bearer $ORG2_TOKEN" \
-  -H "content-type: application/json" \
-  -d '{
-	"peers": ["localhost:8051"],
-	"fcn":"update",
-	"args":["{\"UserName\":\"zlls\",\"Organization\":\"律师事务所\",\"Company\":\"北京市中伦律师事务所\",\"Account\":\"zlls666\"}"]
-}')
-echo "Transacton ID is $TRX_ID"
 
 echo "GET query chaincode on peer1 of Org1"
 echo
 curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo?peer=peer1&fcn=query&args=%5B%22zlls%22%5D" \
+  "http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo?peer=peer1&fcn=query&args=%5B%22123%22%5D" \
   -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json"
 echo

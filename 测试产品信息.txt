@@ -1,9 +1,10 @@
+ProductID             string  产品ID，主键 -->"123"
 ProductName	 	 				String	产品名称	-->"钱包汇通第一期保理ABS"
 ProductType						String	产品类型	-->"信托计划"
-BasicAssets						String	基础资产	-->"400000000"
+BasicAssets						String	基础资产	-->"保理车贷"
 ProjectScale					Float64	项目规模	-->400000000
 Originators						String	原始债权人	-->”qbht“ (钱包汇通保理公司)
-Investor						String	投资方		-->”qbjf,shyh,zrj“(钱包金服 上海银行 中融金)
+Investor						[]String	投资方		-->["qbjf","shyh","zrj"](钱包金服 上海银行 中融金)
 ExpectedReturn					String	预期收益率（1%）-->"15"
 PaymentMethod					String	支付方式	-->"按季支付"
 TrustInstitution				String	信托机构	-->”zrgj“(中融国际)
