@@ -100,10 +100,23 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 
 // Deletes an entity from state
 func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
+	if len(args)!= 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1 ")
+		}
+	UserName := args[0]
+	UserInfo, err := stub.GetState(UserName)
+	//test if the user has been existed
+	if err != nil {
+		return shim.Error("The user never been exited")
 	}
-return shim.Success(nil);
+	if UserInfo == nil {
+	return shim.Error("The user`s information is empty!")
+ }
+ err = stub.DelState(UserName) //remove the key from chaincode state
+ 	if err != nil {
+ 		return shim.Error("Failed to delete the user. ")
+ 	}
+ return shim.Success(nil)
 
 }
 
@@ -128,9 +141,32 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 }
 
 func (t *SimpleChaincode) update(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-
-
-    return shim.Success(nil);
+	var err error
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 2. ")
+	}
+	var NewPartnerInfoObj BusinessPartnerInfoStruct
+	var OldPartnerInfoObj BusinessPartnerInfoStruct
+	NewPartnerInfo :=args[0]
+	err = json.Unmarshal([]byte(NewPartnerInfo),&NewPartnerInfoObj)
+	if err != nil {
+	fmt.Println("error:", err)
+	return shim.Error(err.Error())
+	 }
+	UserName := NewPartnerInfoObj.UserName
+	OldUserInfo, _ := stub.GetState(UserName)
+	if OldUserInfo == nil {
+		return shim.Error("the user is not exist!!")
+	}
+	err = json.Unmarshal([]byte(OldUserInfo),&OldPartnerInfoObj)
+	NewPartnerInfoObj.CreatedTime = OldPartnerInfoObj.CreatedTime
+	NewPartnerInfoObj.OperateLog = OldPartnerInfoObj.OperateLog
+	jsonAsBytes,_:= json.Marshal(NewPartnerInfoObj)
+	err = stub.PutState(UserName,[]byte(jsonAsBytes))
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(nil);
 }
 
 func main() {
