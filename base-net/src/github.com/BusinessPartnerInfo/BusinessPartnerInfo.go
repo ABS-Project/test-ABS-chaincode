@@ -9,7 +9,7 @@ package main
 
 import (
 	"fmt"
-	"strconv"
+	// "strconv"
   "time"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
@@ -31,9 +31,8 @@ type BusinessPartnerInfo struct {
 	Company              string `json:"Company"`
 	Account              string `json:"Account"`
 	CreatedTime          time.Time `json:"CreatedTime"`
-	OperateLog         []string `json:"OperateLog"`
+	OperateLog           []string `json:"OperateLog"`
 }
-
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 	logger.Info("########### BusinessPartnerInfo Init ###########")
@@ -44,7 +43,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 
 // Transaction makes payment of X units from A to B
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	logger.Info("########### example_cc0 Invoke ###########")
+	logger.Info("########### BusinessPartnerInfo Invoke ###########")
 
 	function, args := stub.GetFunctionAndParameters()
   if function == "add" {
@@ -91,13 +90,14 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
-	}
+	 }
+	 return shim.Success(nil);
 }
 
 func (t *SimpleChaincode) update(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 
-        return shim.Success(nil);
+    return shim.Success(nil);
 }
 
 func main() {
