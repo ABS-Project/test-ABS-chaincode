@@ -9,5 +9,7 @@
 运行testAPIS
 
 
-========链码名称对应==========
-bpinfo-----BusinessPartnerInfo.go
+========测试脚本名称对应==========
+bpinfo-test.sh-----BusinessPartnerInfo.go
+
+cpinfo-test.sh-----ClaimsPackageInfo.go
