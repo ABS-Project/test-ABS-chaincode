@@ -13,3 +13,14 @@
 bpinfo-test.sh-----BusinessPartnerInfo.go
 
 cpinfo-test.sh-----ClaimsPackageInfo.go
+
+txrecorder.sh -----TxRecorder.go
+
+===========加操作日志联合测试==============
+          txrecorder.sh
+          cpinfo-test.sh
+          tx-query.sh ----将上一步返回的TxID替换查询，测试上一步操作记录是否成功
+
+    or：
+    tx-cp-test.sh
+    tx-query.sh
