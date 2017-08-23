@@ -10,6 +10,7 @@ import (
   "time"
 	"encoding/json"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric/common/util"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
@@ -32,7 +33,17 @@ type TxInfoStruct struct{
 	TxArguments        string     `json:"TxArguments"`   //所传参数
 	TxDescription      string     `json:"TxDescription"` //交易描述
 }
-
+// ============================================================================================================================
+// BusinessPartnerInfo struct
+// ============================================================================================================================
+type BusinessPartnerInfoStruct struct {
+	UserName             string `json:"UserName"`
+	Organization         string `json:"Organization"`
+	Company              string `json:"Company"`
+	Account              string `json:"Account"`
+	CreatedTime          time.Time `json:"CreatedTime"`
+	OperateLog           []string `json:"OperateLog"`
+}
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 	logger.Info("########### TxRecorder Init ###########")
@@ -72,6 +83,28 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 	TxTest, _ := stub.GetState(TxID)
 	if TxTest != nil {
 		return shim.Error("the Transaction is sexisted")
+	}
+	TxProposer := args[1]
+	functionName := "query"
+	invokeArgs := util.ToChaincodeArgs(functionName,TxProposer)
+	response := stub.InvokeChaincode("BusinessPartnerInfo", invokeArgs, "mychannel")
+	if response.Status != shim.OK {
+			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+			fmt.Printf(errStr)
+			return shim.Error(errStr)
+		}
+	TxProposerInfo := response.Payload
+	var TxProposerObj BusinessPartnerInfoStruct
+	err = json.Unmarshal([]byte(TxProposerInfo),&TxProposerObj)
+	if err != nil {
+	fmt.Println("error:", err)
+	return shim.Error(err.Error())
+	 }
+	TxProposerObj.OperateLog = append(TxProposerObj.OperateLog,TxID)
+	jsonAsBytes0,_:= json.Marshal(TxProposerObj)
+	err = stub.PutState(TxProposer,[]byte(jsonAsBytes0))
+	if err != nil {
+		return shim.Error(err.Error())
 	}
 	var TxInfoObj TxInfoStruct
 	TxInfoObj.TxID = args[0]
