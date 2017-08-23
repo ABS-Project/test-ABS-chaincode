@@ -1,4 +1,4 @@
-Tx// 操作记录链码操作
+// 操作记录链码操作
 
 /*
 
@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
   "time"
+	"encoding/json"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
@@ -22,7 +23,7 @@ type SimpleChaincode struct {
 // ============================================================================================================================
 // TxInfo struct
 // ============================================================================================================================
-type TxInfoStruct{
+type TxInfoStruct struct{
 	TxID               string     `json:"TxID"`          //交易ID
 	TxProposer         string     `json:"TxProposer"`    //交易发起人
 	TxTime             time.Time  `json:"TxTime"`        //交易时间
@@ -66,6 +67,7 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 	if len(args) != 7 {
 		return shim.Error("Incorrect number of arguments. Expecting 2. ")
 	}
+
 	TxID := args[0]
 	TxTest, _ := stub.GetState(TxID)
 	if TxTest != nil {
@@ -74,14 +76,13 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 	var TxInfoObj TxInfoStruct
 	TxInfoObj.TxID = args[0]
 	TxInfoObj.TxProposer = args[1]
-	TxInfoObj.TxTime = args[2]
+	TxInfoObj.TxTime,_ =time.Parse("2006-01-02T15:04:05.000Z",args[2])
 	TxInfoObj.TxChaincode = args[3]
 	TxInfoObj.TxFunction = args[4]
 	TxInfoObj.TxArguments = args[5]
 	TxInfoObj.TxDescription = args[6]
 
 	jsonAsBytes,_:= json.Marshal(TxInfoObj)
-
 	err = stub.PutState(TxID,[]byte(jsonAsBytes))
 	if err != nil {
 		return shim.Error(err.Error())

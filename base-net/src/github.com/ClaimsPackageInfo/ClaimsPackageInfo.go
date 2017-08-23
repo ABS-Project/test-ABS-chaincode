@@ -179,11 +179,12 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 
 func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var err error
-	if len(args) != 1 {
+
+	if len(args) != 2 {
 		return shim.Error("Incorrect number of arguments. Expecting 2. ")
 	}
 	var InitClaimsPackageInfoObj InitClaimsPackageInfoStruct
-	InitClaimsPackageInfo :=args[0]
+	InitClaimsPackageInfo :=args[1]
 	err = json.Unmarshal([]byte(InitClaimsPackageInfo),&InitClaimsPackageInfoObj)
 	if err != nil {
 	fmt.Println("error:", err)
