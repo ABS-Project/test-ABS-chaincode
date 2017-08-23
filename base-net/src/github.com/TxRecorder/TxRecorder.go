@@ -1,4 +1,4 @@
-// 操作记录链码操作
+Tx// 操作记录链码操作
 
 /*
 
@@ -7,7 +7,6 @@
 package main
 import (
 	"fmt"
-	"strconv"
   "time"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -19,11 +18,18 @@ var logger = shim.NewLogger("TxRecorder")
 type SimpleChaincode struct {
 }
 
-// ============================================================================================================================
-// TxRecorder struct
-// ============================================================================================================================
-type UserStruct struct {
 
+// ============================================================================================================================
+// TxInfo struct
+// ============================================================================================================================
+type TxInfoStruct{
+	TxID               string     `json:"TxID"`          //交易ID
+	TxProposer         string     `json:"TxProposer"`    //交易发起人
+	TxTime             time.Time  `json:"TxTime"`        //交易时间
+	TxChaincode        string     `json:"TxChaincode"`   //链码名称
+	TxFunction         string     `json:"TxFunction"`    //所调函数
+	TxArguments        string     `json:"TxArguments"`   //所传参数
+	TxDescription      string     `json:"TxDescription"` //交易描述
 }
 
 
@@ -50,19 +56,37 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		// queries an entity state
 		return t.query(stub, args)
 	}
-	if function == "update" {
-		// Deletes an entity from its state
-		return t.update(stub, args)
-	}
 
 	logger.Errorf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0])
 	return shim.Error(fmt.Sprintf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0]))
 }
 
 func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var err error
+	if len(args) != 7 {
+		return shim.Error("Incorrect number of arguments. Expecting 2. ")
+	}
+	TxID := args[0]
+	TxTest, _ := stub.GetState(TxID)
+	if TxTest != nil {
+		return shim.Error("the Transaction is sexisted")
+	}
+	var TxInfoObj TxInfoStruct
+	TxInfoObj.TxID = args[0]
+	TxInfoObj.TxProposer = args[1]
+	TxInfoObj.TxTime = args[2]
+	TxInfoObj.TxChaincode = args[3]
+	TxInfoObj.TxFunction = args[4]
+	TxInfoObj.TxArguments = args[5]
+	TxInfoObj.TxDescription = args[6]
 
+	jsonAsBytes,_:= json.Marshal(TxInfoObj)
 
-        return shim.Success(nil);
+	err = stub.PutState(TxID,[]byte(jsonAsBytes))
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(nil);
 }
 
 // Deletes an entity from state
@@ -77,17 +101,23 @@ func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string
 
 // Query callback representing the query of a chaincode
 func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
-	}
+	 }
+	TxID := args[0]
+ 	TxInfo, err := stub.GetState(TxID)
+ if err != nil {
+ 	jsonResp := "{\"Error\":\"Failed to get state for " + TxID + "\"}"
+ 	return shim.Error(jsonResp)
+  }
+ if TxInfo == nil {
+ 	jsonResp := "{\"Error\":\"Nil content for " + TxID + "\"}"
+ 	return shim.Error(jsonResp)
+  }
+ return shim.Success(TxInfo)
 }
 
-func (t *SimpleChaincode) update(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
-
-        return shim.Success(nil);
-}
 
 func main() {
 	err := shim.Start(new(SimpleChaincode))
