@@ -10,13 +10,13 @@
 
 
 ========测试脚本名称对应==========
-bpinfo-test.sh-----BusinessPartnerInfo.go
+bpinfo-test.sh-----BusinessPartnerInfo.go    可用
 
-cpinfo-test.sh-----ClaimsPackageInfo.go
+cpinfo-test.sh-----ClaimsPackageInfo.go    已过期
 
-txrecorder.sh -----TxRecorder.go
+txrecorder.sh -----TxRecorder.go           已过期
 
-===========加操作日志联合测试==============
+===========加操作日志联合测试==============   可用
 
     tx-cp-test.sh
     tx-query.sh  ------将上一步返回的TxID替换查询，测试上一步操作记录是否成功

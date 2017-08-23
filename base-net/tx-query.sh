@@ -12,7 +12,7 @@ echo "ORG1 token is $ORG1_TOKEN"
 echo "GET query chaincode TxRecorder on peer1 of Org1"
 echo
 curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/TxRecorder?peer=peer1&fcn=query&args=%5B%2237ec9f358daeeed1a08977c98f743bd62d906bcd3b771673cb5d466de005a17e%22%5D" \
+  "http://localhost:4000/channels/mychannel/chaincodes/TxRecorder?peer=peer1&fcn=query&args=%5B%22b8d6d872645466f6c2488686ea0879f1396979af95e21106bba55a6f6fa96552%22%5D" \
   -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json"
 echo

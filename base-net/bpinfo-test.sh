@@ -220,6 +220,20 @@ TRX_ID=$(curl -s -X POST \
 }')
 echo "Transacton ID is $TRX_ID"
 
+echo
+echo "POST invoke chaincode BusinessPartnerInfo on peers of Org2"
+echo "POST addOperateLog "
+echo
+TRX_ID=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo \
+  -H "authorization: Bearer $ORG2_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["localhost:8051"],
+	"fcn":"addOperateLog",
+	"args":["zlls","37ec9f358daeeed1a08977c98f743bd62d906bcd3b771673cb5d466de005a17e"]
+}')
+echo "Transacton ID is $TRX_ID"
 echo "GET query chaincode on peer1 of Org1"
 echo
 curl -s -X GET \

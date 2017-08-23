@@ -51,7 +51,10 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		// Deletes an entity from its state
 		return t.add(stub, args)
 	}
-
+	if function == "addOperateLog" {
+		// Deletes an entity from its state
+		return t.addOperateLog(stub, args)
+	}
 	if function == "delete" {
 		// Deletes an entity from its state
 		return t.delete(stub, args)
@@ -91,7 +94,7 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 	PartnerInfoObj.CreatedTime = time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
 	var OperateLog []string
 	TxID := stub.GetTxID()
-	OperateLog =append(OperateLog,TxID) 
+	OperateLog =append(OperateLog,TxID)
 	PartnerInfoObj.OperateLog = OperateLog
 	jsonAsBytes,_:= json.Marshal(PartnerInfoObj)
 	err = stub.PutState(UserName,[]byte(jsonAsBytes))
@@ -99,6 +102,31 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 		return shim.Error(err.Error())
 	}
   return shim.Success(nil);
+}
+
+func (t *SimpleChaincode) addOperateLog(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var err error
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2. ")
+	}
+	var PartnerInfoObj BusinessPartnerInfoStruct
+	UserName := args[0]
+	NewOperateLog := args[1]
+	OldUserInfo, _ := stub.GetState(UserName)
+	if OldUserInfo == nil {
+		return shim.Error("the user is not exist!!")
+	}
+	err = json.Unmarshal([]byte(OldUserInfo),&PartnerInfoObj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	PartnerInfoObj.OperateLog = append(PartnerInfoObj.OperateLog,NewOperateLog)
+	jsonAsBytes,_:= json.Marshal(PartnerInfoObj)
+	err = stub.PutState(UserName,[]byte(jsonAsBytes))
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(nil);
 }
 
 // Deletes an entity from state
