@@ -286,12 +286,12 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 // ============================================================================================================================
 func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
   var err error
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 2")
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
 
-	ProductID := args[0]
-	UrlAndHashInfo := args[1]
+	ProductID := args[1]
+	UrlAndHashInfo := args[2]
 
 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
 	if err != nil {
@@ -330,9 +330,10 @@ func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterf
 	TxInfo[1] = args[0]                         //交易发起人
 	TxInfo[2] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
 	TxInfo[3] = "ClaimsPackageInfo"             //链码名称
-	TxInfo[4] = "add"                           //所调函数
-	TxInfo[5] = args[1]                         //所传参数
+	TxInfo[4] = "AssetSaleAgreementUpload done"  //所调函数
+	TxInfo[5] = args[2]                         //所传参数
 	TxInfo[6] = "发起人上传买卖协议"               //交易描述
+
 	functionName := "add"
 	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6])
 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
