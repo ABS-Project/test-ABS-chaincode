@@ -255,16 +255,17 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 		return shim.Error(err.Error())
 	}
 	// 现在开始记录操作
-	var TxInfo [7]string
+	var TxInfo [8]string
   TxInfo[0] = stub.GetTxID()                  //交易ID
 	TxInfo[1] = args[0]                         //交易发起人
-	TxInfo[2] = CreatedTime.Format("2006-01-02T15:04:05.000Z")      //交易时间
-	TxInfo[3] = "ClaimsPackageInfo"             //链码名称
-	TxInfo[4] = "add"                           //所调函数
-	TxInfo[5] = args[1]                         //所传参数
-	TxInfo[6] = "基础资产打包上传操作"             //交易描述
+	TxInfo[2] = ProductID                       //产品ID
+	TxInfo[3] = CreatedTime.Format("2006-01-02T15:04:05.000Z")      //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
+	TxInfo[5] = "add"                           //所调函数
+	TxInfo[6] = args[1]                         //所传参数
+	TxInfo[7] = "基础资产打包上传操作"             //交易描述
 	functionName := "add"
-	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6])
+	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[6])
 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
 	if response.Status != shim.OK {
 			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
