@@ -81,7 +81,7 @@ curl -s -X POST \
 }'
 echo
 echo
-TxRecorder
+
 echo "POST request Join channel on Org2"
 echo
 curl -s -X POST \
@@ -355,6 +355,7 @@ TRX_ID=$(curl -s -X POST \
 }')
 echo "Transacton ID is $TRX_ID"
 echo
+
 echo "POST invoke chaincode BusinessPartnerInfo on peers of Org2"
 echo "POST update BusinessPartnerInfo"
 echo
@@ -413,6 +414,21 @@ TRX_ID=$(curl -s -X POST \
 	"peers": ["localhost:8051"],
 	"fcn":"add",
 	"args":["zlls","{\"ProductID\":\"123\",\"ProductName\":\"钱包汇通第一期保理ABS\",\"ProductType\":\"信托计划\",\"BasicAssets\":\"保理车贷\",\"ProjectScale\":400000000,\"Originators\":\"qbht\",\"Investor\":[\"qbjf\",\"shyh\",\"zrj\"],\"ExpectedReturn\":\"15\",\"PaymentMethod\":\"按季付\",\"TrustInstitution\":\"zrgj\",\"DifferenceComplement\":\"amdq\",\"AssetRatingAgency\":\"zhypg\",\"AccountFirm\":\"dhhs\",\"LawOffice\":\"zlls\",\"TrustManagementFee\":10,\"AssetRatingFee\":10,\"CounselFee\":100,\"AccountancyFee\":100,\"BasicCreditorInfo\":{\"Url\":\"www.qianbao/cc/12\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"},\"Remark\":\"无\"}"]
+}')
+echo "Transacton ID is $TRX_ID"
+echo
+
+echo "POST invoke chaincode  on peers of Org2"
+echo "POST assetSaleAgreementUpload"
+echo
+TRX_ID=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
+  -H "authorization: Bearer $ORG2_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["localhost:8051"],
+	"fcn":"assetSaleAgreementUpload",
+	"args":["123","{\"Url\":\"www.qianbao/cc/11\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"}"]
 }')
 echo "Transacton ID is $TRX_ID"
 echo

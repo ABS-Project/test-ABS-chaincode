@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"encoding/json"
   "time"
+
 	"github.com/hyperledger/fabric/common/util"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -146,6 +147,19 @@ type PriorityAssetSubscriptionAgreementStruct struct{
 
 //15.分账记录
 
+// ============================================================================================================================
+// TransferRecord  struct:
+// 包含所有信息的struct
+	type TransferRecordStruct struct {
+		ProductID            string  `json:"ProductID"`
+		WaterFlowNumber      string  `json:"WaterFlowNumber"`
+    WaterFlowNumberTime  string  `json:"WaterFlowNumberTime"`
+		FromAccount          string  `json:"FromAccount"`
+		ToAccount            string  `json:"ToAccount"`
+		BbMount              float64 `json:"BbMount"`
+	}
+
+
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 	logger.Info("########### ClaimsPackageInfo Init ###########")
 	return shim.Success(nil)
@@ -174,6 +188,37 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		// Deletes an entity from its state
 		return t.update(stub, args)
 	}
+
+	if function == "assetSaleAgreementUpload" {
+		return t.assetSaleAgreementUpload(stub, args)
+	}
+	// } else if function == "guaranteeAgreementUpload" {
+	// 	return t.guaranteeAgreementUpload(stub, args)
+	// } else if function == "trustManageementUpload" {
+	// 	return t.trustManageementUpload(stub, args)
+	// } else if function == "assetRatingInstructionUpload" {
+	// 	return t.assetRatingInstructionUpload(stub, args)
+	// } else if function == "accountOpinionUpload" {
+	// 	return t.accountOpinionUpload(stub, args)
+	// } else if function == "counselOpinionUpload" {
+	// 	return t.counselOpinionUpload(stub, args)
+	// } else if function == "productPlanInstructionUpload" {
+	// 	return t.productPlanInstructionUpload(stub, args)
+	// } else if function == "inferiorAssetObtain" {
+	// 	return t.inferiorAssetObtain(stub, args)
+	// }else if function == "inferiorAssetObtainRecording" {
+	// 	return t.inferiorAssetObtainRecording(stub, args)
+	// }else if function == "subprimeAssetObtain" {
+	// 	return t.subprimeAssetObtain(stub, args)
+	// }else if function == "subprimeAssetsObtainRecording" {
+	// 	return t.subprimeAssetsObtainRecording(stub, args)
+	// }else if function == "priorityAssetObtain" {
+	// 	return t.priorityAssetObtain(stub, args)
+	// }else if function == "priorityAssetObtainRecording" {
+	// 	return t.priorityAssetObtainRecording(stub, args)
+	// }else if function == "breakAccountRecording" {
+	// 	return t.breakAccountRecording(stub, args)
+	// }
 
 	logger.Errorf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0])
 	return shim.Error(fmt.Sprintf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0]))
@@ -233,6 +278,764 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 
 	return shim.Success(nil);
 }
+
+
+
+// ============================================================================================================================
+// function:发起人上传资产买卖协议（url和hash值）
+// input：ProductID,UrlAndHashInfo
+// ============================================================================================================================
+func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+  var err error
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2")
+	}
+
+	ProductID := args[0]
+	UrlAndHashInfo := args[1]
+
+	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	// timestamp, _:= stub.GetTxTimestamp()
+	// CreatedTime := time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
+	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+		return shim.Error("Error Status!")
+	}
+
+	SaleAgreementObj := SaleAgreementStruct{}
+	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+	if err != nil {
+	  return shim.Error(err.Error())
+	}
+	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+
+	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+
+  ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+  err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+  if err != nil{
+		return shim.Error(err.Error())
+	}
+  fmt.Println("AssetSaleAgreementUpload done")
+
+	// 现在开始记录操作
+	var TxInfo [7]string
+  TxInfo[0] = stub.GetTxID()                  //交易ID
+	TxInfo[1] = args[0]                         //交易发起人
+	TxInfo[2] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
+	TxInfo[3] = "ClaimsPackageInfo"             //链码名称
+	TxInfo[4] = "add"                           //所调函数
+	TxInfo[5] = args[1]                         //所传参数
+	TxInfo[6] = "发起人上传买卖协议"               //交易描述
+	functionName := "add"
+	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6])
+	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
+	if response.Status != shim.OK {
+			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+			fmt.Printf(errStr)
+			return shim.Error(errStr)
+		}
+	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
+  fmt.Println("success add a new TxInfo")
+	//记录操作完成
+
+	return shim.Success(nil)
+}
+
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
+//
+// // ============================================================================================================================
+// // function:发起人上传资产买卖协议（url和hash值）
+// // input：ProductID,ulr,hash
+// // ============================================================================================================================
+// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//   var err error
+// 	if len(args) != 2 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 2")
+// 	}
+// 	ProductID := args[0]
+// 	UrlAndHashInfo := args[1]
+//
+// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 		return shim.Error("Error Status!")
+// 	}
+//
+// 	SaleAgreementObj := SaleAgreementStruct{}
+// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	if err != nil {
+// 	  return shim.Error(err.Error())
+// 	}
+// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
+//
+// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
+//
+//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
+//   err = stub.PutState(ProductID, ClaimsPackageInfoAsBytes)
+//   if err != nil{
+// 		return shim.Error(err.Error())
+// 	}
+//   fmt.Println("AssetSaleAgreementUpload done")
+// 	return shim.Success(nil)
+// }
 
 // Deletes an entity from state
 func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) pb.Response {
