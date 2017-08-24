@@ -27,6 +27,7 @@ type SimpleChaincode struct {
 type TxInfoStruct struct{
 	TxID               string     `json:"TxID"`          //交易ID
 	TxProposer         string     `json:"TxProposer"`    //交易发起人
+	TxProductID        string     `json:"TxProductID"`
 	TxTime             time.Time  `json:"TxTime"`        //交易时间
 	TxChaincode        string     `json:"TxChaincode"`   //链码名称
 	TxFunction         string     `json:"TxFunction"`    //所调函数
@@ -65,7 +66,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 
 func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var err error
-	if len(args) != 7 {
+	if len(args) != 8 {
 		return shim.Error("Incorrect number of arguments. Expecting 2. ")
 	}
 
@@ -86,11 +87,12 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 	var TxInfoObj TxInfoStruct
 	TxInfoObj.TxID = args[0]
 	TxInfoObj.TxProposer = args[1]
-	TxInfoObj.TxTime,_ =time.Parse("2006-01-02T15:04:05.000Z",args[2])
-	TxInfoObj.TxChaincode = args[3]
-	TxInfoObj.TxFunction = args[4]
-	TxInfoObj.TxArguments = args[5]
-	TxInfoObj.TxDescription = args[6]
+	TxInfoObj.TxProductID = args[2]
+	TxInfoObj.TxTime,_ =time.Parse("2006-01-02T15:04:05.000Z",args[3])
+	TxInfoObj.TxChaincode = args[4]
+	TxInfoObj.TxFunction = args[5]
+	TxInfoObj.TxArguments = args[6]
+	TxInfoObj.TxDescription = args[7]
 
 	jsonAsBytes,_:= json.Marshal(TxInfoObj)
 	err = stub.PutState(TxID,[]byte(jsonAsBytes))
