@@ -613,6 +613,31 @@ TRX_ID=$(curl -s -X POST \
 echo "Transacton ID is $TRX_ID"
 echo
 
+#post请求可以排序，但是查询结果没有返回客户端
+# echo "POST invoke chaincode  on peers of Org2"
+# echo "POST queryTransferRecord"
+# echo
+# TRX_ID=$(curl -s -X POST \
+#   http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
+#   -H "authorization: Bearer $ORG2_TOKEN" \
+#   -H "content-type: application/json" \
+#   -d '{
+# 	"peers": ["localhost:8051"],
+# 	"fcn":"queryTransferRecord",
+# 	"args":["RecordID03"]
+# }')
+# echo "Transacton ID is $TRX_ID"
+# echo
+
+echo "GET query chaincode ClaimsPackageInfo on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo?peer=peer1&fcn=query&args=%5B%22RecordID03%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
 echo "GET query chaincode ClaimsPackageInfo on peer1 of Org1"
 echo
 curl -s -X GET \
