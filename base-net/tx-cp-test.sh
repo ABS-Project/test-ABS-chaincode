@@ -638,6 +638,36 @@ curl -s -X GET \
 echo
 echo
 
+echo "POST invoke chaincode  on peers of Org2"
+echo "POST breakAccountRecording"
+echo
+TRX_ID=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
+  -H "authorization: Bearer $ORG2_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["localhost:8051"],
+	"fcn":"breakAccountRecording",
+	"args":["zlls","123","RecordID04","{\"ProductID\":\"123\",\"WaterFlowNumber\":\"33333333333\",\"WaterFlowNumberTime\":\"2017-10\",\"FromAccount\":\"ccc\",\"ToAccount\":\"cccccc\",\"BbMount\":3000.00}"]
+}')
+echo "Transacton ID is $TRX_ID"
+echo
+
+echo "POST invoke chaincode  on peers of Org2"
+echo "POST finishBreakAccountRecording"
+echo
+TRX_ID=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
+  -H "authorization: Bearer $ORG2_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["localhost:8051"],
+	"fcn":"finishBreakAccountRecording",
+	"args":["zlls","123","RecordID03","{\"ProductID\":\"123\",\"WaterFlowNumber\":\"33333333333\",\"WaterFlowNumberTime\":\"2017-10\",\"FromAccount\":\"ccc\",\"ToAccount\":\"cccccc\",\"BbMount\":3000.00}"]
+}')
+echo "Transacton ID is $TRX_ID"
+echo
+
 echo "GET query chaincode ClaimsPackageInfo on peer1 of Org1"
 echo
 curl -s -X GET \

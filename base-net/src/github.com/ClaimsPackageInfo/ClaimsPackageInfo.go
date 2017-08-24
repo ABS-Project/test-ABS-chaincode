@@ -227,11 +227,12 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.priorityAssetObtain(stub, args)
 	}else if function == "priorityAssetObtainRecording" {
 		return t.priorityAssetObtainRecording(stub, args)
+	}else if function == "breakAccountRecording" {
+		return t.breakAccountRecording(stub, args)
+	}else if function == "finishBreakAccountRecording" {
+		return t.finishBreakAccountRecording(stub, args)
 	}
-	// }else if function == "breakAccountRecording" {
-	// 	return t.breakAccountRecording(stub, args)
-	// }
-
+  
 	logger.Errorf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0])
 	return shim.Error(fmt.Sprintf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0]))
 }
@@ -1207,81 +1208,129 @@ func (t *SimpleChaincode) priorityAssetObtainRecording(stub shim.ChaincodeStubIn
 	return shim.Success(nil)
 }
 
-// // ============================================================================================================================
-// // function:代币节点进行分帐，没调用一次记录一条分帐记录
-// // input：Initiators, ProductID, RecordID, TransferRecordStruct
-// // ============================================================================================================================
-// func (t *SimpleChaincode) breakAccountRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-// 	var err error
-// 	if len(args) != 4 {
-// 		return shim.Error("Incorrect number of arguments. Expecting 4")
-// 	}
-//
-// 	ProductID := args[1]
-// 	RecordID := args[2]
-// 	TransferRecordInfo := args[3]
-//
-// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
-// 	if err != nil {
-// 		return shim.Error(err.Error())
-// 	}
-//
-// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
-// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-// 	if( ClaimsPackageInfoObj.Status != "PriorityAssetObtain" ){
-// 		return shim.Error("Error Status!")
-// 	}
-//
-// 	TransferRecordObj := TransferRecordStruct{}
-// 	err = json.Unmarshal([]byte(TransferRecordInfo),&TransferRecordObj)
-// 	if err != nil {
-// 	  return shim.Error(err.Error())
-// 	}
-// 	TransferRecordAsBytes, err := json.Marshal(TransferRecordObj)
-// 	if err != nil {
-// 		return shim.Error(err.Error())
-// 	}
-// 	err = stub.PutState(RecordID, []byte(TransferRecordAsBytes))
-//   if err != nil{
-// 		return shim.Error(err.Error())
-// 	}
-//
-// 	//ClaimsPackageInfoObj.Status = "PriorityAssetObtainRecording"
-//   // ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
-// 	// if err != nil {
-// 	// 	return shim.Error(err.Error())
-// 	// }
-//   // err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
-//   // if err != nil{
-// 	// 	return shim.Error(err.Error())
-// 	// }
-//   fmt.Println("Have a breakAccountRecording")
-//
-// 	// 现在开始记录操作
-// 	var TxInfo [8]string
-//   TxInfo[0] = stub.GetTxID()                  //交易ID
-// 	TxInfo[1] = args[0]                         //交易发起人
-// 	TxInfo[2] = ProductID                       //产品ID
-// 	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
-// 	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-// 	TxInfo[5] = "priorityAssetObtainRecording"  //所调函数
-// 	TxInfo[6] = args[3]                         //所传参数
-// 	TxInfo[7] = "代币节点进行了一次分帐的记录" //交易描述
-//
-// 	functionName := "add"
-// 	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
-// 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
-// 	if response.Status != shim.OK {
-// 			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-// 			fmt.Printf(errStr)
-// 			return shim.Error(errStr)
-// 		}
-// 	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-//   fmt.Println("success add a new TxInfo")
-// 	//记录操作完成
-//
-// 	return shim.Success(nil)
-// }
+// ============================================================================================================================
+// function:代币节点进行分帐，没调用一次记录一条分帐记录
+// input：Initiators, ProductID, RecordID, TransferRecordStruct
+// ============================================================================================================================
+func (t *SimpleChaincode) breakAccountRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var err error
+	if len(args) != 4 {
+		return shim.Error("Incorrect number of arguments. Expecting 4")
+	}
+
+	ProductID := args[1]
+	RecordID := args[2]
+	TransferRecordInfo := args[3]
+
+	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+	if( ClaimsPackageInfoObj.Status != "PriorityAssetObtainRecording" ){
+		return shim.Error("Error Status!")
+	}
+
+	TransferRecordObj := TransferRecordStruct{}
+	err = json.Unmarshal([]byte(TransferRecordInfo),&TransferRecordObj)
+	if err != nil {
+	  return shim.Error(err.Error())
+	}
+	TransferRecordAsBytes, err := json.Marshal(TransferRecordObj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	err = stub.PutState(RecordID, []byte(TransferRecordAsBytes))
+  if err != nil{
+		return shim.Error(err.Error())
+	}
+
+  fmt.Println("Have a breakAccountRecording")
+
+	// 现在开始记录操作
+	var TxInfo [8]string
+  TxInfo[0] = stub.GetTxID()                  //交易ID
+	TxInfo[1] = args[0]                         //交易发起人
+	TxInfo[2] = ProductID                       //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
+	TxInfo[5] = "breakAccountRecording"  //所调函数
+	TxInfo[6] = args[3]                         //所传参数
+	TxInfo[7] = "代币节点进行了一次分帐的记录" //交易描述
+
+	functionName := "add"
+	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
+	if response.Status != shim.OK {
+			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+			fmt.Printf(errStr)
+			return shim.Error(errStr)
+		}
+	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
+  fmt.Println("success add a new TxInfo")
+	//记录操作完成
+
+	return shim.Success(nil)
+}
+
+// ============================================================================================================================
+// function:完成分帐
+// input：Initiators, ProductID
+// ============================================================================================================================
+func (t *SimpleChaincode) finishBreakAccountRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var err error
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2")
+	}
+
+	ProductID := args[1]
+
+	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+	if( ClaimsPackageInfoObj.Status != "PriorityAssetObtainRecording" ){
+		return shim.Error("Error Status!")
+	}
+	ClaimsPackageInfoObj.Status = "BreakAccountRecording"
+  ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+  err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+  if err != nil{
+		return shim.Error(err.Error())
+	}
+
+	// 现在开始记录操作
+	var TxInfo [8]string
+  TxInfo[0] = stub.GetTxID()                  //交易ID
+	TxInfo[1] = args[0]                         //交易发起人
+	TxInfo[2] = ProductID                       //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
+	TxInfo[5] = "finishBreakAccountRecording"  //所调函数
+	TxInfo[6] = "无参数"                         //所传参数
+	TxInfo[7] = "完成了分帐"                      //交易描述
+
+	functionName := "add"
+	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
+	if response.Status != shim.OK {
+			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+			fmt.Printf(errStr)
+			return shim.Error(errStr)
+		}
+	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
+  fmt.Println("success add a new TxInfo")
+	//记录操作完成
+
+	return shim.Success(nil)
+}
 
 // ============================================================================================================================
 // function:查询转账记录
