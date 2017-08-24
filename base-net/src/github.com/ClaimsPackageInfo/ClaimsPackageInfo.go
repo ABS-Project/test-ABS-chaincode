@@ -195,16 +195,17 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.guaranteeAgreementUpload(stub, args)
 	} else if function == "trustManageementUpload" {
 		return t.trustManageementUpload(stub, args)
-	} else if function == "assetRatingInstructionUpload" {
+	}else if function == "assetRatingInstructionUpload" {
 		return t.assetRatingInstructionUpload(stub, args)
 	} else if function == "accountOpinionUpload" {
 		return t.accountOpinionUpload(stub, args)
-	} else if function == "counselOpinionUpload" {
+	}else if function == "counselOpinionUpload" {
 		return t.counselOpinionUpload(stub, args)
 	} else if function == "productPlanInstructionUpload" {
 		return t.productPlanInstructionUpload(stub, args)
-	} else if function == "inferiorAssetObtain" {
+	}else if function == "inferiorAssetObtain" {
 		return t.inferiorAssetObtain(stub, args)
+	}
 	// }else if function == "inferiorAssetObtainRecording" {
 	// 	return t.inferiorAssetObtainRecording(stub, args)
 	// }else if function == "subprimeAssetObtain" {
@@ -719,7 +720,7 @@ func (t *SimpleChaincode) productPlanInstructionUpload(stub shim.ChaincodeStubIn
 		return shim.Error("Error Status!")
 	}
 
-	ProductPlanInstructionObj := ProductPlanInstructionStruct
+	ProductPlanInstructionObj := ProductPlanInstructionStruct{}
 	err = json.Unmarshal([]byte(UrlAndHashInfo),&ProductPlanInstructionObj)
 	if err != nil {
 	  return shim.Error(err.Error())
