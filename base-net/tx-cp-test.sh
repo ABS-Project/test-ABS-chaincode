@@ -538,6 +538,81 @@ TRX_ID=$(curl -s -X POST \
 echo "Transacton ID is $TRX_ID"
 echo
 
+echo "POST invoke chaincode  on peers of Org2"
+echo "POST inferiorAssetObtainRecording"
+echo
+TRX_ID=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
+  -H "authorization: Bearer $ORG2_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["localhost:8051"],
+	"fcn":"inferiorAssetObtainRecording",
+	"args":["zlls","123","RecordID01","{\"ProductID\":\"123\",\"WaterFlowNumber\":\"11111111\",\"WaterFlowNumberTime\":\"2017-08\",\"FromAccount\":\"aaa\",\"ToAccount\":\"aaaaaaa\",\"BbMount\":1000.00}"]
+}')
+echo "Transacton ID is $TRX_ID"
+echo
+
+echo "POST invoke chaincode  on peers of Org2"
+echo "POST subprimeAssetObtain"
+echo
+TRX_ID=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
+  -H "authorization: Bearer $ORG2_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["localhost:8051"],
+	"fcn":"subprimeAssetObtain",
+	"args":["zlls","123","{\"Url\":\"www.qianbao/cc/20\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"}"]
+}')
+echo "Transacton ID is $TRX_ID"
+echo
+
+echo "POST invoke chaincode  on peers of Org2"
+echo "POST subprimeAssetsObtainRecording"
+echo
+TRX_ID=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
+  -H "authorization: Bearer $ORG2_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["localhost:8051"],
+	"fcn":"subprimeAssetsObtainRecording",
+	"args":["zlls","123","RecordID02","{\"ProductID\":\"123\",\"WaterFlowNumber\":\"22222222\",\"WaterFlowNumberTime\":\"2017-9\",\"FromAccount\":\"bbb\",\"ToAccount\":\"bbbbbb\",\"BbMount\":2000.00}"]
+}')
+echo "Transacton ID is $TRX_ID"
+echo
+
+echo "POST invoke chaincode  on peers of Org2"
+echo "POST priorityAssetObtain"
+echo
+TRX_ID=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
+  -H "authorization: Bearer $ORG2_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["localhost:8051"],
+	"fcn":"priorityAssetObtain",
+	"args":["zlls","123","{\"Url\":\"www.qianbao/cc/21\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"}"]
+}')
+echo "Transacton ID is $TRX_ID"
+echo
+
+echo "POST invoke chaincode  on peers of Org2"
+echo "POST priorityAssetObtainRecording"
+echo
+TRX_ID=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
+  -H "authorization: Bearer $ORG2_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["localhost:8051"],
+	"fcn":"priorityAssetObtainRecording",
+	"args":["zlls","123","RecordID03","{\"ProductID\":\"123\",\"WaterFlowNumber\":\"33333333333\",\"WaterFlowNumberTime\":\"2017-10\",\"FromAccount\":\"ccc\",\"ToAccount\":\"cccccc\",\"BbMount\":3000.00}"]
+}')
+echo "Transacton ID is $TRX_ID"
+echo
+
 echo "GET query chaincode ClaimsPackageInfo on peer1 of Org1"
 echo
 curl -s -X GET \

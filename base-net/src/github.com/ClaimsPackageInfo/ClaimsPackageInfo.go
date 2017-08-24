@@ -19,7 +19,13 @@ import (
 
 var logger = shim.NewLogger("ClaimsPackageInfo")
 
-// SimpleChaincode example simple Chaincode implementation
+//==========================================================================================================
+//流程状态表示
+//{"ProInfoUpload","AssetSaleAgreementUpload","GuaranteeAgreementUpload","TrustManageementUpload",
+//"AssetRatingInstructionUpload","AccountOpinionUpload","CounselOpinionUpload","ProductPlanInstructionUpload",
+//"InferiorAssetObtain","InferiorAssetObtainRecording","SubprimeAssetObtain","SubprimeAssetsObtainRecording",
+//"PriorityAssetObtain","PriorityAssetObtainRecording","BreakAccountRecording"}
+//==========================================================================================================
 type SimpleChaincode struct {
 }
 
@@ -150,14 +156,14 @@ type PriorityAssetSubscriptionAgreementStruct struct{
 // ============================================================================================================================
 // TransferRecord  struct:
 // 包含所有信息的struct
-	type TransferRecordStruct struct {
-		ProductID            string  `json:"ProductID"`
-		WaterFlowNumber      string  `json:"WaterFlowNumber"`
-    WaterFlowNumberTime  string  `json:"WaterFlowNumberTime"`
-		FromAccount          string  `json:"FromAccount"`
-		ToAccount            string  `json:"ToAccount"`
-		BbMount              float64 `json:"BbMount"`
-	}
+type TransferRecordStruct struct {
+	ProductID            string  `json:"ProductID"`
+	WaterFlowNumber      string  `json:"WaterFlowNumber"`
+  WaterFlowNumberTime  string  `json:"WaterFlowNumberTime"`
+	FromAccount          string  `json:"FromAccount"`
+	ToAccount            string  `json:"ToAccount"`
+	BbMount              float64 `json:"BbMount"`
+}
 
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
@@ -205,17 +211,17 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.productPlanInstructionUpload(stub, args)
 	}else if function == "inferiorAssetObtain" {
 		return t.inferiorAssetObtain(stub, args)
+	}else if function == "inferiorAssetObtainRecording" {
+		return t.inferiorAssetObtainRecording(stub, args)
+	}else if function == "subprimeAssetObtain" {
+		return t.subprimeAssetObtain(stub, args)
+	}else if function == "subprimeAssetsObtainRecording" {
+		return t.subprimeAssetsObtainRecording(stub, args)
+	}else if function == "priorityAssetObtain" {
+		return t.priorityAssetObtain(stub, args)
+	}else if function == "priorityAssetObtainRecording" {
+		return t.priorityAssetObtainRecording(stub, args)
 	}
-	// }else if function == "inferiorAssetObtainRecording" {
-	// 	return t.inferiorAssetObtainRecording(stub, args)
-	// }else if function == "subprimeAssetObtain" {
-	// 	return t.subprimeAssetObtain(stub, args)
-	// }else if function == "subprimeAssetsObtainRecording" {
-	// 	return t.subprimeAssetsObtainRecording(stub, args)
-	// }else if function == "priorityAssetObtain" {
-	// 	return t.priorityAssetObtain(stub, args)
-	// }else if function == "priorityAssetObtainRecording" {
-	// 	return t.priorityAssetObtainRecording(stub, args)
 	// }else if function == "breakAccountRecording" {
 	// 	return t.breakAccountRecording(stub, args)
 	// }
@@ -283,7 +289,7 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 
 // ============================================================================================================================
 // function:发起人上传资产买卖协议（url和hash值）
-// input：ProductID,UrlAndHashInfo
+// input：Initiators, ProductID, UrlAndHashInfo
 // ============================================================================================================================
 func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
   var err error
@@ -352,7 +358,7 @@ func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterf
 
 // ============================================================================================================================
 // function:差额补足人上传差额补足协议（url和hash值）
-// input：ProductID,UrlAndHashInfo
+// input：Initiators, ProductID, UrlAndHashInfo
 // ============================================================================================================================
 func (t *SimpleChaincode) guaranteeAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
   var err error
@@ -421,7 +427,7 @@ func (t *SimpleChaincode) guaranteeAgreementUpload(stub shim.ChaincodeStubInterf
 
 // ============================================================================================================================
 // function:SPV上传产品设计书（url和hash值）
-// input：ProductID,UrlAndHashInfo
+// input：Initiators, ProductID, UrlAndHashInfo
 // ============================================================================================================================
 func (t *SimpleChaincode) trustManageementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
   var err error
@@ -490,7 +496,7 @@ func (t *SimpleChaincode) trustManageementUpload(stub shim.ChaincodeStubInterfac
 
 // ============================================================================================================================
 // function:资产评级机构上传资产评级（url和hash值）
-// input：ProductID,AssetRatingInstructionStruct
+// input：Initiators, ProductID, AssetRatingInstructionStruct
 // ============================================================================================================================
 func (t *SimpleChaincode) assetRatingInstructionUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
   var err error
@@ -499,7 +505,7 @@ func (t *SimpleChaincode) assetRatingInstructionUpload(stub shim.ChaincodeStubIn
 	}
 
 	ProductID := args[1]
-	UrlAndHashInfo := args[2]
+	AssetRatingInstructionInfo := args[2]
 
 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
 	if err != nil {
@@ -513,7 +519,7 @@ func (t *SimpleChaincode) assetRatingInstructionUpload(stub shim.ChaincodeStubIn
 	}
 
 	AssetRatingInstructionObj := AssetRatingInstructionStruct{}
-	err = json.Unmarshal([]byte(UrlAndHashInfo),&AssetRatingInstructionObj)
+	err = json.Unmarshal([]byte(AssetRatingInstructionInfo),&AssetRatingInstructionObj)
 	if err != nil {
 	  return shim.Error(err.Error())
 	}
@@ -559,7 +565,7 @@ func (t *SimpleChaincode) assetRatingInstructionUpload(stub shim.ChaincodeStubIn
 
 // ============================================================================================================================
 // function:会计师事务所上传审计报告（url和hash值）
-// input：ProductID,UrlAndHashInfo
+// input：Initiators, ProductID, UrlAndHashInfo
 // ============================================================================================================================
 func (t *SimpleChaincode) accountOpinionUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
   var err error
@@ -628,7 +634,7 @@ func (t *SimpleChaincode) accountOpinionUpload(stub shim.ChaincodeStubInterface,
 
 // ============================================================================================================================
 // function:律师事务所上传法律意见书（url和hash值）
-// input：ProductID,UrlAndHashInfo
+// input：Initiators, ProductID, UrlAndHashInfo
 // ============================================================================================================================
 func (t *SimpleChaincode) counselOpinionUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
   var err error
@@ -697,7 +703,7 @@ func (t *SimpleChaincode) counselOpinionUpload(stub shim.ChaincodeStubInterface,
 
 // ============================================================================================================================
 // function:SPV上传产品计划说明书（url和hash值）
-// input：ProductID,UrlAndHashInfo
+// input：Initiators, ProductID, UrlAndHashInfo
 // ============================================================================================================================
 func (t *SimpleChaincode) productPlanInstructionUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
   var err error
@@ -766,7 +772,7 @@ func (t *SimpleChaincode) productPlanInstructionUpload(stub shim.ChaincodeStubIn
 
 // ============================================================================================================================
 // function:劣后级资产购买方认购劣后级资产（url和hash值）
-// input：ProductID,UrlAndHashInfo
+// input：Initiators, ProductID, UrlAndHashInfo
 // ============================================================================================================================
 func (t *SimpleChaincode) inferiorAssetObtain(stub shim.ChaincodeStubInterface, args []string) pb.Response {
   var err error
@@ -833,356 +839,372 @@ func (t *SimpleChaincode) inferiorAssetObtain(stub shim.ChaincodeStubInterface, 
 	return shim.Success(nil)
 }
 
-// // ============================================================================================================================
-// // function:发起人上传资产买卖协议（url和hash值）
-// // input：ProductID,UrlAndHashInfo
-// // ============================================================================================================================
-// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-//   var err error
-// 	if len(args) != 3 {
-// 		return shim.Error("Incorrect number of arguments. Expecting 3")
-// 	}
-//
-// 	ProductID := args[1]
-// 	UrlAndHashInfo := args[2]
-//
-// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
-// 	if err != nil {
-// 		return shim.Error(err.Error())
-// 	}
-// 	// timestamp, _:= stub.GetTxTimestamp()
-// 	// CreatedTime := time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
-// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
-// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
-// 		return shim.Error("Error Status!")
-// 	}
-//
-// 	SaleAgreementObj := SaleAgreementStruct{}
-// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
-// 	if err != nil {
-// 	  return shim.Error(err.Error())
-// 	}
-// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
-//
-// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
-//
-//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
-// 	if err != nil {
-// 		return shim.Error(err.Error())
-// 	}
-//   err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
-//   if err != nil{
-// 		return shim.Error(err.Error())
-// 	}
-//   fmt.Println("AssetSaleAgreementUpload done")
-//
-// 	// 现在开始记录操作
-// 	var TxInfo [8]string
-//   TxInfo[0] = stub.GetTxID()                  //交易ID
-// 	TxInfo[1] = args[0]                         //交易发起人
-// 	TxInfo[2] = ProductID                       //产品ID
-// 	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
-// 	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-// 	TxInfo[5] = "AssetSaleAgreementUpload"     //所调函数
-// 	TxInfo[6] = args[2]                         //所传参数
-// 	TxInfo[7] = "发起人上传买卖协议"               //交易描述
-//
-// 	functionName := "add"
-// 	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
-// 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
-// 	if response.Status != shim.OK {
-// 			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-// 			fmt.Printf(errStr)
-// 			return shim.Error(errStr)
-// 		}
-// 	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-//   fmt.Println("success add a new TxInfo")
-// 	//记录操作完成
-//
-// 	return shim.Success(nil)
-// }
-//
-// // ============================================================================================================================
-// // function:发起人上传资产买卖协议（url和hash值）
-// // input：ProductID,UrlAndHashInfo
-// // ============================================================================================================================
-// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-//   var err error
-// 	if len(args) != 3 {
-// 		return shim.Error("Incorrect number of arguments. Expecting 3")
-// 	}
-//
-// 	ProductID := args[1]
-// 	UrlAndHashInfo := args[2]
-//
-// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
-// 	if err != nil {
-// 		return shim.Error(err.Error())
-// 	}
-// 	// timestamp, _:= stub.GetTxTimestamp()
-// 	// CreatedTime := time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
-// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
-// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
-// 		return shim.Error("Error Status!")
-// 	}
-//
-// 	SaleAgreementObj := SaleAgreementStruct{}
-// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
-// 	if err != nil {
-// 	  return shim.Error(err.Error())
-// 	}
-// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
-//
-// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
-//
-//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
-// 	if err != nil {
-// 		return shim.Error(err.Error())
-// 	}
-//   err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
-//   if err != nil{
-// 		return shim.Error(err.Error())
-// 	}
-//   fmt.Println("AssetSaleAgreementUpload done")
-//
-// 	// 现在开始记录操作
-// 	var TxInfo [8]string
-//   TxInfo[0] = stub.GetTxID()                  //交易ID
-// 	TxInfo[1] = args[0]                         //交易发起人
-// 	TxInfo[2] = ProductID                       //产品ID
-// 	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
-// 	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-// 	TxInfo[5] = "AssetSaleAgreementUpload"     //所调函数
-// 	TxInfo[6] = args[2]                         //所传参数
-// 	TxInfo[7] = "发起人上传买卖协议"               //交易描述
-//
-// 	functionName := "add"
-// 	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
-// 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
-// 	if response.Status != shim.OK {
-// 			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-// 			fmt.Printf(errStr)
-// 			return shim.Error(errStr)
-// 		}
-// 	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-//   fmt.Println("success add a new TxInfo")
-// 	//记录操作完成
-//
-// 	return shim.Success(nil)
-// }
-//
-// // ============================================================================================================================
-// // function:发起人上传资产买卖协议（url和hash值）
-// // input：ProductID,UrlAndHashInfo
-// // ============================================================================================================================
-// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-//   var err error
-// 	if len(args) != 3 {
-// 		return shim.Error("Incorrect number of arguments. Expecting 3")
-// 	}
-//
-// 	ProductID := args[1]
-// 	UrlAndHashInfo := args[2]
-//
-// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
-// 	if err != nil {
-// 		return shim.Error(err.Error())
-// 	}
-// 	// timestamp, _:= stub.GetTxTimestamp()
-// 	// CreatedTime := time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
-// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
-// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
-// 		return shim.Error("Error Status!")
-// 	}
-//
-// 	SaleAgreementObj := SaleAgreementStruct{}
-// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
-// 	if err != nil {
-// 	  return shim.Error(err.Error())
-// 	}
-// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
-//
-// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
-//
-//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
-// 	if err != nil {
-// 		return shim.Error(err.Error())
-// 	}
-//   err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
-//   if err != nil{
-// 		return shim.Error(err.Error())
-// 	}
-//   fmt.Println("AssetSaleAgreementUpload done")
-//
-// 	// 现在开始记录操作
-// 	var TxInfo [8]string
-//   TxInfo[0] = stub.GetTxID()                  //交易ID
-// 	TxInfo[1] = args[0]                         //交易发起人
-// 	TxInfo[2] = ProductID                       //产品ID
-// 	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
-// 	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-// 	TxInfo[5] = "AssetSaleAgreementUpload"     //所调函数
-// 	TxInfo[6] = args[2]                         //所传参数
-// 	TxInfo[7] = "发起人上传买卖协议"               //交易描述
-//
-// 	functionName := "add"
-// 	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
-// 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
-// 	if response.Status != shim.OK {
-// 			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-// 			fmt.Printf(errStr)
-// 			return shim.Error(errStr)
-// 		}
-// 	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-//   fmt.Println("success add a new TxInfo")
-// 	//记录操作完成
-//
-// 	return shim.Success(nil)
-// }
-//
-// // ============================================================================================================================
-// // function:发起人上传资产买卖协议（url和hash值）
-// // input：ProductID,UrlAndHashInfo
-// // ============================================================================================================================
-// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-//   var err error
-// 	if len(args) != 3 {
-// 		return shim.Error("Incorrect number of arguments. Expecting 3")
-// 	}
-//
-// 	ProductID := args[1]
-// 	UrlAndHashInfo := args[2]
-//
-// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
-// 	if err != nil {
-// 		return shim.Error(err.Error())
-// 	}
-// 	// timestamp, _:= stub.GetTxTimestamp()
-// 	// CreatedTime := time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
-// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
-// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
-// 		return shim.Error("Error Status!")
-// 	}
-//
-// 	SaleAgreementObj := SaleAgreementStruct{}
-// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
-// 	if err != nil {
-// 	  return shim.Error(err.Error())
-// 	}
-// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
-//
-// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
-//
-//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
-// 	if err != nil {
-// 		return shim.Error(err.Error())
-// 	}
-//   err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
-//   if err != nil{
-// 		return shim.Error(err.Error())
-// 	}
-//   fmt.Println("AssetSaleAgreementUpload done")
-//
-// 	// 现在开始记录操作
-// 	var TxInfo [8]string
-//   TxInfo[0] = stub.GetTxID()                  //交易ID
-// 	TxInfo[1] = args[0]                         //交易发起人
-// 	TxInfo[2] = ProductID                       //产品ID
-// 	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
-// 	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-// 	TxInfo[5] = "AssetSaleAgreementUpload"     //所调函数
-// 	TxInfo[6] = args[2]                         //所传参数
-// 	TxInfo[7] = "发起人上传买卖协议"               //交易描述
-//
-// 	functionName := "add"
-// 	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
-// 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
-// 	if response.Status != shim.OK {
-// 			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-// 			fmt.Printf(errStr)
-// 			return shim.Error(errStr)
-// 		}
-// 	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-//   fmt.Println("success add a new TxInfo")
-// 	//记录操作完成
-//
-// 	return shim.Success(nil)
-// }
-//
-// // ============================================================================================================================
-// // function:发起人上传资产买卖协议（url和hash值）
-// // input：ProductID,UrlAndHashInfo
-// // ============================================================================================================================
-// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-//   var err error
-// 	if len(args) != 3 {
-// 		return shim.Error("Incorrect number of arguments. Expecting 3")
-// 	}
-//
-// 	ProductID := args[1]
-// 	UrlAndHashInfo := args[2]
-//
-// 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
-// 	if err != nil {
-// 		return shim.Error(err.Error())
-// 	}
-// 	// timestamp, _:= stub.GetTxTimestamp()
-// 	// CreatedTime := time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
-// 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
-// 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
-// 		return shim.Error("Error Status!")
-// 	}
-//
-// 	SaleAgreementObj := SaleAgreementStruct{}
-// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
-// 	if err != nil {
-// 	  return shim.Error(err.Error())
-// 	}
-// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
-//
-// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
-//
-//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
-// 	if err != nil {
-// 		return shim.Error(err.Error())
-// 	}
-//   err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
-//   if err != nil{
-// 		return shim.Error(err.Error())
-// 	}
-//   fmt.Println("AssetSaleAgreementUpload done")
-//
-// 	// 现在开始记录操作
-// 	var TxInfo [8]string
-//   TxInfo[0] = stub.GetTxID()                  //交易ID
-// 	TxInfo[1] = args[0]                         //交易发起人
-// 	TxInfo[2] = ProductID                       //产品ID
-// 	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
-// 	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-// 	TxInfo[5] = "AssetSaleAgreementUpload"     //所调函数
-// 	TxInfo[6] = args[2]                         //所传参数
-// 	TxInfo[7] = "发起人上传买卖协议"               //交易描述
-//
-// 	functionName := "add"
-// 	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
-// 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
-// 	if response.Status != shim.OK {
-// 			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-// 			fmt.Printf(errStr)
-// 			return shim.Error(errStr)
-// 		}
-// 	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-//   fmt.Println("success add a new TxInfo")
-// 	//记录操作完成
-//
-// 	return shim.Success(nil)
-// }
-//
+// ============================================================================================================================
+// function:代币节点记录劣后级资产购买的转账情况
+// input：Initiators, ProductID, RecordID, TransferRecordStruct
+// ============================================================================================================================
+func (t *SimpleChaincode) inferiorAssetObtainRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+  var err error
+	if len(args) != 4 {
+		return shim.Error("Incorrect number of arguments. Expecting 4")
+	}
+
+	ProductID := args[1]
+	RecordID := args[2]
+	TransferRecordInfo := args[3]
+
+	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+	if( ClaimsPackageInfoObj.Status != "InferiorAssetObtain" ){
+		return shim.Error("Error Status!")
+	}
+
+	TransferRecordObj := TransferRecordStruct{}
+	err = json.Unmarshal([]byte(TransferRecordInfo),&TransferRecordObj)
+	if err != nil {
+	  return shim.Error(err.Error())
+	}
+	TransferRecordAsBytes, err := json.Marshal(TransferRecordObj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	err = stub.PutState(RecordID, []byte(TransferRecordAsBytes))
+  if err != nil{
+		return shim.Error(err.Error())
+	}
+
+	ClaimsPackageInfoObj.Status = "InferiorAssetObtainRecording"
+  ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+  err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+  if err != nil{
+		return shim.Error(err.Error())
+	}
+  fmt.Println("AssetSaleAgreementUpload done")
+
+	// 现在开始记录操作
+	var TxInfo [8]string
+  TxInfo[0] = stub.GetTxID()                  //交易ID
+	TxInfo[1] = args[0]                         //交易发起人
+	TxInfo[2] = ProductID                       //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
+	TxInfo[5] = "inferiorAssetObtainRecording"  //所调函数
+	TxInfo[6] = args[3]                         //所传参数
+	TxInfo[7] = "代币节点记录劣后级资产购买的转账情况" //交易描述
+
+	functionName := "add"
+	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
+	if response.Status != shim.OK {
+			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+			fmt.Printf(errStr)
+			return shim.Error(errStr)
+		}
+	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
+  fmt.Println("success add a new TxInfo")
+	//记录操作完成
+
+	return shim.Success(nil)
+}
+
+// ============================================================================================================================
+// function:次优级资产购买方上传次优级资产认购协议
+// input：Initiators, ProductID, UrlAndHashInfo
+// ============================================================================================================================
+func (t *SimpleChaincode) subprimeAssetObtain(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+  var err error
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting 3")
+	}
+
+	ProductID := args[1]
+	UrlAndHashInfo := args[2]
+
+	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+	if( ClaimsPackageInfoObj.Status != "InferiorAssetObtainRecording" ){
+		return shim.Error("Error Status!")
+	}
+
+	SubprimeAssetSubscriptionAgreementObj := SubprimeAssetSubscriptionAgreementStruct{}
+	err = json.Unmarshal([]byte(UrlAndHashInfo),&SubprimeAssetSubscriptionAgreementObj)
+	if err != nil {
+	  return shim.Error(err.Error())
+	}
+	ClaimsPackageInfoObj.SubprimeAssetSubscriptionAgreement = SubprimeAssetSubscriptionAgreementObj
+
+	ClaimsPackageInfoObj.Status = "SubprimeAssetObtain"
+
+  ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+  err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+  if err != nil{
+		return shim.Error(err.Error())
+	}
+  fmt.Println("SubprimeAssetObtain done")
+
+	// 现在开始记录操作
+	var TxInfo [8]string
+  TxInfo[0] = stub.GetTxID()                  //交易ID
+	TxInfo[1] = args[0]                         //交易发起人
+	TxInfo[2] = ProductID                       //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
+	TxInfo[5] = "subprimeAssetObtain"     //所调函数
+	TxInfo[6] = args[2]                         //所传参数
+	TxInfo[7] = "次优级资产购买方上传次优级资产认购协议"               //交易描述
+
+	functionName := "add"
+	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
+	if response.Status != shim.OK {
+			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+			fmt.Printf(errStr)
+			return shim.Error(errStr)
+		}
+	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
+  fmt.Println("success add a new TxInfo")
+	//记录操作完成
+
+	return shim.Success(nil)
+}
+
+// ============================================================================================================================
+// function: 代币节点记录次优级资产认购方转账记录
+// input：Initiators, ProductID, RecordID, TransferRecordStruct
+// ============================================================================================================================
+func (t *SimpleChaincode) subprimeAssetsObtainRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var err error
+	if len(args) != 4 {
+		return shim.Error("Incorrect number of arguments. Expecting 4")
+	}
+
+	ProductID := args[1]
+	RecordID := args[2]
+	TransferRecordInfo := args[3]
+
+	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+	if( ClaimsPackageInfoObj.Status != "SubprimeAssetObtain" ){
+		return shim.Error("Error Status!")
+	}
+
+	TransferRecordObj := TransferRecordStruct{}
+	err = json.Unmarshal([]byte(TransferRecordInfo),&TransferRecordObj)
+	if err != nil {
+	  return shim.Error(err.Error())
+	}
+	TransferRecordAsBytes, err := json.Marshal(TransferRecordObj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	err = stub.PutState(RecordID, []byte(TransferRecordAsBytes))
+  if err != nil{
+		return shim.Error(err.Error())
+	}
+
+	ClaimsPackageInfoObj.Status = "SubprimeAssetsObtainRecording"
+  ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+  err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+  if err != nil{
+		return shim.Error(err.Error())
+	}
+  fmt.Println("SubprimeAssetsObtainRecording done")
+
+	// 现在开始记录操作
+	var TxInfo [8]string
+  TxInfo[0] = stub.GetTxID()                  //交易ID
+	TxInfo[1] = args[0]                         //交易发起人
+	TxInfo[2] = ProductID                       //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
+	TxInfo[5] = "subprimeAssetsObtainRecording"  //所调函数
+	TxInfo[6] = args[3]                         //所传参数
+	TxInfo[7] = "代币节点记录次优级资产购买的转账情况" //交易描述
+
+	functionName := "add"
+	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
+	if response.Status != shim.OK {
+			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+			fmt.Printf(errStr)
+			return shim.Error(errStr)
+		}
+	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
+  fmt.Println("success add a new TxInfo")
+	//记录操作完成
+
+	return shim.Success(nil)
+}
+
+// ============================================================================================================================
+// function:优先级资产购买方上传优先级资产认购协议（url和hash）
+// input：Initiators, ProductID, UrlAndHashInfo
+// ============================================================================================================================
+func (t *SimpleChaincode) priorityAssetObtain(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+  var err error
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting 3")
+	}
+
+	ProductID := args[1]
+	UrlAndHashInfo := args[2]
+
+	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+	if( ClaimsPackageInfoObj.Status != "SubprimeAssetsObtainRecording" ){
+		return shim.Error("Error Status!")
+	}
+
+	PriorityAssetSubscriptionAgreementObj := PriorityAssetSubscriptionAgreementStruct{}
+	err = json.Unmarshal([]byte(UrlAndHashInfo),&PriorityAssetSubscriptionAgreementObj)
+	if err != nil {
+	  return shim.Error(err.Error())
+	}
+	ClaimsPackageInfoObj.PriorityAssetSubscriptionAgreement = PriorityAssetSubscriptionAgreementObj
+
+	ClaimsPackageInfoObj.Status = "PriorityAssetObtain"
+
+  ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+  err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+  if err != nil{
+		return shim.Error(err.Error())
+	}
+  fmt.Println("PriorityAssetObtain done")
+
+	// 现在开始记录操作
+	var TxInfo [8]string
+  TxInfo[0] = stub.GetTxID()                  //交易ID
+	TxInfo[1] = args[0]                         //交易发起人
+	TxInfo[2] = ProductID                       //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
+	TxInfo[5] = "priorityAssetObtain"     //所调函数
+	TxInfo[6] = args[2]                         //所传参数
+	TxInfo[7] = "优先级资产购买方上传优先级资产认购协议"               //交易描述
+
+	functionName := "add"
+	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
+	if response.Status != shim.OK {
+			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+			fmt.Printf(errStr)
+			return shim.Error(errStr)
+		}
+	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
+  fmt.Println("success add a new TxInfo")
+	//记录操作完成
+
+	return shim.Success(nil)
+}
+
+// ============================================================================================================================
+// function:代币节点记录优先级资产认购方的转账记录
+// input：Initiators, ProductID, RecordID, TransferRecordStruct
+// ============================================================================================================================
+func (t *SimpleChaincode) priorityAssetObtainRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var err error
+	if len(args) != 4 {
+		return shim.Error("Incorrect number of arguments. Expecting 4")
+	}
+
+	ProductID := args[1]
+	RecordID := args[2]
+	TransferRecordInfo := args[3]
+
+	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
+	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
+	if( ClaimsPackageInfoObj.Status != "PriorityAssetObtain" ){
+		return shim.Error("Error Status!")
+	}
+
+	TransferRecordObj := TransferRecordStruct{}
+	err = json.Unmarshal([]byte(TransferRecordInfo),&TransferRecordObj)
+	if err != nil {
+	  return shim.Error(err.Error())
+	}
+	TransferRecordAsBytes, err := json.Marshal(TransferRecordObj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	err = stub.PutState(RecordID, []byte(TransferRecordAsBytes))
+  if err != nil{
+		return shim.Error(err.Error())
+	}
+
+	ClaimsPackageInfoObj.Status = "PriorityAssetObtainRecording"
+  ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+  err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+  if err != nil{
+		return shim.Error(err.Error())
+	}
+  fmt.Println("PriorityAssetObtainRecording done")
+
+	// 现在开始记录操作
+	var TxInfo [8]string
+  TxInfo[0] = stub.GetTxID()                  //交易ID
+	TxInfo[1] = args[0]                         //交易发起人
+	TxInfo[2] = ProductID                       //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
+	TxInfo[5] = "priorityAssetObtainRecording"  //所调函数
+	TxInfo[6] = args[3]                         //所传参数
+	TxInfo[7] = "代币节点记录优先级资产购买的转账情况" //交易描述
+
+	functionName := "add"
+	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
+	if response.Status != shim.OK {
+			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+			fmt.Printf(errStr)
+			return shim.Error(errStr)
+		}
+	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
+  fmt.Println("success add a new TxInfo")
+	//记录操作完成
+
+	return shim.Success(nil)
+}
+
 // // ============================================================================================================================
 // // function:发起人上传资产买卖协议（url和hash值）
 // // input：ProductID,UrlAndHashInfo
