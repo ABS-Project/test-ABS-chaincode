@@ -2,15 +2,17 @@
 
 /*
 
-*/
+ */
 
 package main
+
 import (
-	"fmt"
-  "time"
 	"encoding/json"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"fmt"
+	"time"
+
 	"github.com/hyperledger/fabric/common/util"
+	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
@@ -20,23 +22,21 @@ var logger = shim.NewLogger("TxRecorder")
 type SimpleChaincode struct {
 }
 
-
 // ============================================================================================================================
 // TxInfo struct
 // ============================================================================================================================
-type TxInfoStruct struct{
-	TxID               string     `json:"TxID"`          //交易ID
-	TxProposer         string     `json:"TxProposer"`    //交易发起人
-	TxProductID        string     `json:"TxProductID"`
-	TxTime             time.Time  `json:"TxTime"`        //交易时间
-	TxChaincode        string     `json:"TxChaincode"`   //链码名称
-	TxFunction         string     `json:"TxFunction"`    //所调函数
-	TxArguments        string     `json:"TxArguments"`   //所传参数
-	TxDescription      string     `json:"TxDescription"` //交易描述
+type TxInfoStruct struct {
+	TxID          string    `json:"TxID"`       //交易ID
+	TxProposer    string    `json:"TxProposer"` //交易发起人
+	TxProductID   string    `json:"TxProductID"`
+	TxTime        time.Time `json:"TxTime"`        //交易时间
+	TxChaincode   string    `json:"TxChaincode"`   //链码名称
+	TxFunction    string    `json:"TxFunction"`    //所调函数
+	TxArguments   string    `json:"TxArguments"`   //所传参数
+	TxDescription string    `json:"TxDescription"` //交易描述
 }
 
-
-func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
+func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Info("########### TxRecorder Init ###########")
 	return shim.Success(nil)
 }
@@ -45,7 +45,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Info("########### TxRecorder Invoke ###########")
 
 	function, args := stub.GetFunctionAndParameters()
-  if function == "add" {
+	if function == "add" {
 		// Deletes an entity from its state
 		return t.add(stub, args)
 	}
@@ -77,29 +77,29 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 	}
 	TxProposer := args[1]
 	functionName := "addOperateLog"
-	invokeArgs := util.ToChaincodeArgs(functionName,TxProposer,TxID)
+	invokeArgs := util.ToChaincodeArgs(functionName, TxProposer, TxID)
 	response := stub.InvokeChaincode("BusinessPartnerInfo", invokeArgs, "mychannel")
 	if response.Status != shim.OK {
-			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-			fmt.Printf(errStr)
-			return shim.Error(errStr)
+		errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+		fmt.Printf(errStr)
+		return shim.Error(errStr)
 	}
 	var TxInfoObj TxInfoStruct
 	TxInfoObj.TxID = args[0]
 	TxInfoObj.TxProposer = args[1]
 	TxInfoObj.TxProductID = args[2]
-	TxInfoObj.TxTime,_ =time.Parse("2006-01-02T15:04:05.000Z",args[3])
+	TxInfoObj.TxTime, _ = time.Parse("2006-01-02T15:04:05.000Z", args[3])
 	TxInfoObj.TxChaincode = args[4]
 	TxInfoObj.TxFunction = args[5]
 	TxInfoObj.TxArguments = args[6]
 	TxInfoObj.TxDescription = args[7]
 
-	jsonAsBytes,_:= json.Marshal(TxInfoObj)
-	err = stub.PutState(TxID,[]byte(jsonAsBytes))
+	jsonAsBytes, _ := json.Marshal(TxInfoObj)
+	err = stub.PutState(TxID, []byte(jsonAsBytes))
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	return shim.Success(nil);
+	return shim.Success(nil)
 }
 
 // Deletes an entity from state
@@ -108,29 +108,32 @@ func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
 
-
 	return shim.Success(nil)
 }
 
 // Query callback representing the query of a chaincode
 func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
-	 }
-	TxID := args[0]
- 	TxInfo, err := stub.GetState(TxID)
- if err != nil {
- 	jsonResp := "{\"Error\":\"Failed to get state for " + TxID + "\"}"
- 	return shim.Error(jsonResp)
-  }
- if TxInfo == nil {
- 	jsonResp := "{\"Error\":\"Nil content for " + TxID + "\"}"
- 	return shim.Error(jsonResp)
-  }
- return shim.Success(TxInfo)
+
+	var TxInfoList []string
+	for i, TxID := range args {
+		fmt.Printf("查询第%d条操作记录", i)
+		TxInfo, err := stub.GetState(TxID)
+		if err != nil {
+			jsonResp := "{\"Error\":\"Failed to get state for " + TxID + "\"}"
+			return shim.Error(jsonResp)
+		}
+		if TxInfo == nil {
+			jsonResp := "{\"Error\":\"Nil content for " + TxID + "\"}"
+			TxInfoList = append(TxInfoList, jsonResp)
+		}
+		TxInfoList = append(TxInfoList, string([]byte(TxInfo)))
+	}
+	TxInfoListAsByte, err := json.Marshal(TxInfoList)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(TxInfoListAsByte)
 }
-
-
 
 func main() {
 	err := shim.Start(new(SimpleChaincode))
