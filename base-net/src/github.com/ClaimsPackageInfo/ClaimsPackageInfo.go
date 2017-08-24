@@ -298,8 +298,7 @@ func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterf
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	// timestamp, _:= stub.GetTxTimestamp()
-	// CreatedTime := time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
+
 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
@@ -782,8 +781,7 @@ func (t *SimpleChaincode) inferiorAssetObtain(stub shim.ChaincodeStubInterface, 
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	// timestamp, _:= stub.GetTxTimestamp()
-	// CreatedTime := time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
+
 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
 	if( ClaimsPackageInfoObj.Status != "ProductPlanInstructionUpload" ){
