@@ -629,7 +629,7 @@ echo
 # echo "Transacton ID is $TRX_ID"
 # echo
 
-echo "GET query chaincode ClaimsPackageInfo on peer1 of Org1"
+echo "GET query chaincode TransferRecord on peer1 of Org1"
 echo
 curl -s -X GET \
   "http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo?peer=peer1&fcn=query&args=%5B%22RecordID03%22%5D" \
