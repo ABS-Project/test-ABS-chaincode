@@ -173,7 +173,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 
 // Transaction makes payment of X units from A to B
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	logger.Info("########### example_cc0 Invoke ###########")
+	logger.Info("########### ClaimsPackageInfo Invoke ###########")
 
 	function, args := stub.GetFunctionAndParameters()
 	if function == "proInfoUpload" {
@@ -193,6 +193,11 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	if function == "update" {
 		// Deletes an entity from its state
 		return t.update(stub, args)
+	}
+
+	if function == "queryTransferRecord" {
+		// queries transfer record
+		return t.queryTransferRecord(stub, args)
 	}
 
 	if function == "assetSaleAgreementUpload" {
@@ -1202,48 +1207,54 @@ func (t *SimpleChaincode) priorityAssetObtainRecording(stub shim.ChaincodeStubIn
 }
 
 // // ============================================================================================================================
-// // function:发起人上传资产买卖协议（url和hash值）
-// // input：ProductID,UrlAndHashInfo
+// // function:代币节点进行分帐，没调用一次记录一条分帐记录
+// // input：Initiators, ProductID, RecordID, TransferRecordStruct
 // // ============================================================================================================================
-// func (t *SimpleChaincode) assetSaleAgreementUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-//   var err error
-// 	if len(args) != 3 {
-// 		return shim.Error("Incorrect number of arguments. Expecting 3")
+// func (t *SimpleChaincode) breakAccountRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+// 	var err error
+// 	if len(args) != 4 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 4")
 // 	}
 //
 // 	ProductID := args[1]
-// 	UrlAndHashInfo := args[2]
+// 	RecordID := args[2]
+// 	TransferRecordInfo := args[3]
 //
 // 	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
 // 	if err != nil {
 // 		return shim.Error(err.Error())
 // 	}
-// 	// timestamp, _:= stub.GetTxTimestamp()
-// 	// CreatedTime := time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
+//
 // 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
 // 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-// 	if( ClaimsPackageInfoObj.Status != "ProInfoUpload" ){
+// 	if( ClaimsPackageInfoObj.Status != "PriorityAssetObtain" ){
 // 		return shim.Error("Error Status!")
 // 	}
 //
-// 	SaleAgreementObj := SaleAgreementStruct{}
-// 	err = json.Unmarshal([]byte(UrlAndHashInfo),&SaleAgreementObj)
+// 	TransferRecordObj := TransferRecordStruct{}
+// 	err = json.Unmarshal([]byte(TransferRecordInfo),&TransferRecordObj)
 // 	if err != nil {
 // 	  return shim.Error(err.Error())
 // 	}
-// 	ClaimsPackageInfoObj.SaleAgreement = SaleAgreementObj
-//
-// 	ClaimsPackageInfoObj.Status = "AssetSaleAgreementUpload"
-//
-//   ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	TransferRecordAsBytes, err := json.Marshal(TransferRecordObj)
 // 	if err != nil {
 // 		return shim.Error(err.Error())
 // 	}
-//   err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+// 	err = stub.PutState(RecordID, []byte(TransferRecordAsBytes))
 //   if err != nil{
 // 		return shim.Error(err.Error())
 // 	}
-//   fmt.Println("AssetSaleAgreementUpload done")
+//
+// 	//ClaimsPackageInfoObj.Status = "PriorityAssetObtainRecording"
+//   // ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+// 	// if err != nil {
+// 	// 	return shim.Error(err.Error())
+// 	// }
+//   // err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+//   // if err != nil{
+// 	// 	return shim.Error(err.Error())
+// 	// }
+//   fmt.Println("Have a breakAccountRecording")
 //
 // 	// 现在开始记录操作
 // 	var TxInfo [8]string
@@ -1252,9 +1263,9 @@ func (t *SimpleChaincode) priorityAssetObtainRecording(stub shim.ChaincodeStubIn
 // 	TxInfo[2] = ProductID                       //产品ID
 // 	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
 // 	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-// 	TxInfo[5] = "AssetSaleAgreementUpload"     //所调函数
-// 	TxInfo[6] = args[2]                         //所传参数
-// 	TxInfo[7] = "发起人上传买卖协议"               //交易描述
+// 	TxInfo[5] = "priorityAssetObtainRecording"  //所调函数
+// 	TxInfo[6] = args[3]                         //所传参数
+// 	TxInfo[7] = "代币节点进行了一次分帐的记录" //交易描述
 //
 // 	functionName := "add"
 // 	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
@@ -1270,6 +1281,24 @@ func (t *SimpleChaincode) priorityAssetObtainRecording(stub shim.ChaincodeStubIn
 //
 // 	return shim.Success(nil)
 // }
+
+// ============================================================================================================================
+// function:查询转账记录
+// input：RecordID
+// ============================================================================================================================
+func (t *SimpleChaincode) queryTransferRecord(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+
+	TransferRecordAsBytes, err := stub.GetState(args[0])
+	if err != nil{
+		return shim.Error("fail to query transfer record")
+	}
+
+	return shim.Success(TransferRecordAsBytes)
+}
+
 
 // Deletes an entity from state
 func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) pb.Response {
