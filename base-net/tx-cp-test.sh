@@ -324,121 +324,121 @@ curl -s -X POST \
 	"chaincodeVersion":"v0"
 }'
 echo
-echo "POST instantiate chaincode ClaimsPackageInfo on peer1 of Org1"
-echo
-curl -s -X POST \
-  http://localhost:4000/channels/mychannel/chaincodes \
-  -H "authorization: Bearer $ORG1_TOKEN" \
-  -H "content-type: application/json" \
-  -d '{
-	"chaincodeName":"ClaimsPackageInfo",
-	"chaincodeVersion":"v0",
-	"functionName":"init",
-	"args":[]
-}'
-echo
+# echo "POST instantiate chaincode ClaimsPackageInfo on peer1 of Org1"
+# echo
+# curl -s -X POST \
+#   http://localhost:4000/channels/mychannel/chaincodes \
+#   -H "authorization: Bearer $ORG1_TOKEN" \
+#   -H "content-type: application/json" \
+#   -d '{
+# 	"chaincodeName":"ClaimsPackageInfo",
+# 	"chaincodeVersion":"v0",
+# 	"functionName":"init",
+# 	"args":[]
+# }'
+# echo
 ###############################################################################
 ##########    以上为各个链码的安装与初始化过程，下面为链码测试过程   ###################
 ###############################################################################
-echo
-echo "POST invoke chaincode BusinessPartnerInfo on peers of Org2"
-echo "POST add BusinessPartnerInfo"
-echo
-TRX_ID=$(curl -s -X POST \
-  http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo \
-  -H "authorization: Bearer $ORG2_TOKEN" \
-  -H "content-type: application/json" \
-  -d '{
-	"peers": ["localhost:8051"],
-	"fcn":"add",
-	"args":["{\"UserName\":\"zlls\",\"Organization\":\"律师事务所\",\"Company\":\"北京市中伦律师事务所\",\"Account\":\"zlls124\"}"]
-}')
-echo "Transacton ID is $TRX_ID"
-echo
-
-echo "POST invoke chaincode BusinessPartnerInfo on peers of Org2"
-echo "POST update BusinessPartnerInfo"
-echo
-TRX_ID=$(curl -s -X POST \
-  http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo \
-  -H "authorization: Bearer $ORG2_TOKEN" \
-  -H "content-type: application/json" \
-  -d '{
-	"peers": ["localhost:8051"],
-	"fcn":"update",
-	"args":["{\"UserName\":\"zlls\",\"Organization\":\"律师事务所\",\"Company\":\"北京市中伦律师事务所\",\"Account\":\"zlls666\"}"]
-}')
-echo "Transacton ID is $TRX_ID"
-
-echo "GET query chaincode BusinessPartnerInfo on peer1 of Org1"
-echo
-curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo?peer=peer1&fcn=query&args=%5B%22zlls%22%5D" \
-  -H "authorization: Bearer $ORG1_TOKEN" \
-  -H "content-type: application/json"
-echo
-echo
-
-echo "POST invoke chaincode TxRecorder on peers of Org2"
-echo "POST add TxRecorder"
-echo
-TRX_ID=$(curl -s -X POST \
-  http://localhost:4000/channels/mychannel/chaincodes/TxRecorder \
-  -H "authorization: Bearer $ORG2_TOKEN" \
-  -H "content-type: application/json" \
-  -d '{
-	"peers": ["localhost:8051"],
-	"fcn":"add",
-	"args":["cb6f47d8dd51246f79a956af28a52522f2dd6f224c38c6d948f0204602b35329","zlls","123","2017-08-23T05:05:13.359Z","ClaimsPackageInfo","add","{\"ProductID\":\"123\",\"ProductName\":\"钱包汇通第一期保理ABS\",\"ProductType\":\"信托计划\",\"BasicAssets\":\"保理车贷\",\"ProjectScale\":400000000,\"Originators\":\"qbht\",\"Investor\":[\"qbjf\",\"shyh\",\"zrj\"],\"ExpectedReturn\":\"15\",\"PaymentMethod\":\"按季付\",\"TrustInstitution\":\"zrgj\",\"DifferenceComplement\":\"amdq\",\"AssetRatingAgency\":\"zhypg\",\"AccountFirm\":\"dhhs\",\"LawOffice\":\"zlls\",\"TrustManagementFee\":10,\"AssetRatingFee\":10,\"CounselFee\":100,\"AccountancyFee\":100,\"BasicCreditorInfo\":{\"Url\":\"www.qianbao/cc/12\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"},\"Remark\":\"无\"}","基础资产打包上传操作"]
-}')
-echo "Transacton ID is $TRX_ID"
-echo
-
-echo "GET query chaincode TxRecorder on peer1 of Org1"
-echo
-curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/TxRecorder?peer=peer1&fcn=query&args=%5B%22cb6f47d8dd51246f79a956af28a52522f2dd6f224c38c6d948f0204602b35329%22%5D" \
-  -H "authorization: Bearer $ORG1_TOKEN" \
-  -H "content-type: application/json"
-echo
-echo
-
-echo "POST invoke chaincode ClaimsPackageInfo on peers of Org2"
-echo "POST add ClaimsPackageInfo"
-echo
-TRX_ID=$(curl -s -X POST \
-  http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
-  -H "authorization: Bearer $ORG2_TOKEN" \
-  -H "content-type: application/json" \
-  -d '{
-	"peers": ["localhost:8051"],
-	"fcn":"add",
-	"args":["zlls","{\"ProductID\":\"123\",\"ProductName\":\"钱包汇通第一期保理ABS\",\"ProductType\":\"信托计划\",\"BasicAssets\":\"保理车贷\",\"ProjectScale\":400000000,\"Originators\":\"qbht\",\"Investor\":[\"qbjf\",\"shyh\",\"zrj\"],\"ExpectedReturn\":\"15\",\"PaymentMethod\":\"按季付\",\"TrustInstitution\":\"zrgj\",\"DifferenceComplement\":\"amdq\",\"AssetRatingAgency\":\"zhypg\",\"AccountFirm\":\"dhhs\",\"LawOffice\":\"zlls\",\"TrustManagementFee\":10,\"AssetRatingFee\":10,\"CounselFee\":100,\"AccountancyFee\":100,\"BasicCreditorInfo\":{\"Url\":\"www.qianbao/cc/12\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"},\"Remark\":\"无\"}"]
-}')
-echo "Transacton ID is $TRX_ID"
-echo
-
-echo "POST invoke chaincode  on peers of Org2"
-echo "POST assetSaleAgreementUpload"
-echo
-TRX_ID=$(curl -s -X POST \
-  http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
-  -H "authorization: Bearer $ORG2_TOKEN" \
-  -H "content-type: application/json" \
-  -d '{
-	"peers": ["localhost:8051"],
-	"fcn":"assetSaleAgreementUpload",
-	"args":["zlls","123","{\"Url\":\"www.qianbao/cc/11\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"}"]
-}')
-echo "Transacton ID is $TRX_ID"
-echo
-
-echo "GET query chaincode ClaimsPackageInfo on peer1 of Org1"
-echo
-curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo?peer=peer1&fcn=query&args=%5B%22123%22%5D" \
-  -H "authorization: Bearer $ORG1_TOKEN" \
-  -H "content-type: application/json"
-echo
-echo
+# echo
+# echo "POST invoke chaincode BusinessPartnerInfo on peers of Org2"
+# echo "POST add BusinessPartnerInfo"
+# echo
+# TRX_ID=$(curl -s -X POST \
+#   http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo \
+#   -H "authorization: Bearer $ORG2_TOKEN" \
+#   -H "content-type: application/json" \
+#   -d '{
+# 	"peers": ["localhost:8051"],
+# 	"fcn":"add",
+# 	"args":["{\"UserName\":\"zlls\",\"Organization\":\"律师事务所\",\"Company\":\"北京市中伦律师事务所\",\"Account\":\"zlls124\"}"]
+# }')
+# echo "Transacton ID is $TRX_ID"
+# echo
+#
+# echo "POST invoke chaincode BusinessPartnerInfo on peers of Org2"
+# echo "POST update BusinessPartnerInfo"
+# echo
+# TRX_ID=$(curl -s -X POST \
+#   http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo \
+#   -H "authorization: Bearer $ORG2_TOKEN" \
+#   -H "content-type: application/json" \
+#   -d '{
+# 	"peers": ["localhost:8051"],
+# 	"fcn":"update",
+# 	"args":["{\"UserName\":\"zlls\",\"Organization\":\"律师事务所\",\"Company\":\"北京市中伦律师事务所\",\"Account\":\"zlls666\"}"]
+# }')
+# echo "Transacton ID is $TRX_ID"
+#
+# echo "GET query chaincode BusinessPartnerInfo on peer1 of Org1"
+# echo
+# curl -s -X GET \
+#   "http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo?peer=peer1&fcn=query&args=%5B%22zlls%22%5D" \
+#   -H "authorization: Bearer $ORG1_TOKEN" \
+#   -H "content-type: application/json"
+# echo
+# echo
+#
+# echo "POST invoke chaincode TxRecorder on peers of Org2"
+# echo "POST add TxRecorder"
+# echo
+# TRX_ID=$(curl -s -X POST \
+#   http://localhost:4000/channels/mychannel/chaincodes/TxRecorder \
+#   -H "authorization: Bearer $ORG2_TOKEN" \
+#   -H "content-type: application/json" \
+#   -d '{
+# 	"peers": ["localhost:8051"],
+# 	"fcn":"add",
+# 	"args":["cb6f47d8dd51246f79a956af28a52522f2dd6f224c38c6d948f0204602b35329","zlls","123","2017-08-23T05:05:13.359Z","ClaimsPackageInfo","add","{\"ProductID\":\"123\",\"ProductName\":\"钱包汇通第一期保理ABS\",\"ProductType\":\"信托计划\",\"BasicAssets\":\"保理车贷\",\"ProjectScale\":400000000,\"Originators\":\"qbht\",\"Investor\":[\"qbjf\",\"shyh\",\"zrj\"],\"ExpectedReturn\":\"15\",\"PaymentMethod\":\"按季付\",\"TrustInstitution\":\"zrgj\",\"DifferenceComplement\":\"amdq\",\"AssetRatingAgency\":\"zhypg\",\"AccountFirm\":\"dhhs\",\"LawOffice\":\"zlls\",\"TrustManagementFee\":10,\"AssetRatingFee\":10,\"CounselFee\":100,\"AccountancyFee\":100,\"BasicCreditorInfo\":{\"Url\":\"www.qianbao/cc/12\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"},\"Remark\":\"无\"}","基础资产打包上传操作"]
+# }')
+# echo "Transacton ID is $TRX_ID"
+# echo
+#
+# echo "GET query chaincode TxRecorder on peer1 of Org1"
+# echo
+# curl -s -X GET \
+#   "http://localhost:4000/channels/mychannel/chaincodes/TxRecorder?peer=peer1&fcn=query&args=%5B%22cb6f47d8dd51246f79a956af28a52522f2dd6f224c38c6d948f0204602b35329%22%5D" \
+#   -H "authorization: Bearer $ORG1_TOKEN" \
+#   -H "content-type: application/json"
+# echo
+# echo
+#
+# echo "POST invoke chaincode ClaimsPackageInfo on peers of Org2"
+# echo "POST add ClaimsPackageInfo"
+# echo
+# TRX_ID=$(curl -s -X POST \
+#   http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
+#   -H "authorization: Bearer $ORG2_TOKEN" \
+#   -H "content-type: application/json" \
+#   -d '{
+# 	"peers": ["localhost:8051"],
+# 	"fcn":"proInfoUpload",
+# 	"args":["zlls","{\"ProductID\":\"123\",\"ProductName\":\"钱包汇通第一期保理ABS\",\"ProductType\":\"信托计划\",\"BasicAssets\":\"保理车贷\",\"ProjectScale\":400000000,\"Originators\":\"qbht\",\"Investor\":[\"qbjf\",\"shyh\",\"zrj\"],\"ExpectedReturn\":\"15\",\"PaymentMethod\":\"按季付\",\"TrustInstitution\":\"zrgj\",\"DifferenceComplement\":\"amdq\",\"AssetRatingAgency\":\"zhypg\",\"AccountFirm\":\"dhhs\",\"LawOffice\":\"zlls\",\"TrustManagementFee\":10,\"AssetRatingFee\":10,\"CounselFee\":100,\"AccountancyFee\":100,\"BasicCreditorInfo\":{\"Url\":\"www.qianbao/cc/12\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"},\"Remark\":\"无\"}"]
+# }')
+# echo "Transacton ID is $TRX_ID"
+# echo
+#
+# echo "POST invoke chaincode  on peers of Org2"
+# echo "POST assetSaleAgreementUpload"
+# echo
+# TRX_ID=$(curl -s -X POST \
+#   http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
+#   -H "authorization: Bearer $ORG2_TOKEN" \
+#   -H "content-type: application/json" \
+#   -d '{
+# 	"peers": ["localhost:8051"],
+# 	"fcn":"assetSaleAgreementUpload",
+# 	"args":["zlls","123","{\"Url\":\"www.qianbao/cc/11\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"}"]
+# }')
+# echo "Transacton ID is $TRX_ID"
+# echo
+#
+# echo "GET query chaincode ClaimsPackageInfo on peer1 of Org1"
+# echo
+# curl -s -X GET \
+#   "http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo?peer=peer1&fcn=query&args=%5B%22123%22%5D" \
+#   -H "authorization: Bearer $ORG1_TOKEN" \
+#   -H "content-type: application/json"
+# echo
+# echo
 echo "Total execution time : $(($(date +%s)-starttime)) secs ..."

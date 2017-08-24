@@ -35,6 +35,10 @@ type TxInfoStruct struct{
 	TxDescription      string     `json:"TxDescription"` //交易描述
 }
 
+type TxInfoListStruct struct{
+  TxInfoList         []string   `json:"TxInfoList"`
+}
+
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 	logger.Info("########### TxRecorder Init ###########")
@@ -114,20 +118,29 @@ func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string
 
 // Query callback representing the query of a chaincode
 func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
-	 }
-	TxID := args[0]
- 	TxInfo, err := stub.GetState(TxID)
+	// if len(args) != 1 {
+	// 	return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+	//  }
+	var TxInfoListObj TxInfoListStruct
+	for i,TxID := range args {
+		fmt.Printf("查询第%d条操作记录",i);
+	 	TxInfo, err := stub.GetState(TxID)
+		if err != nil {
+		 	jsonResp := "{\"Error\":\"Failed to get state for " + TxID + "\"}"
+		 	return shim.Error(jsonResp)
+		 }
+		if TxInfo == nil {
+		 	jsonResp := "{\"Error\":\"Nil content for " + TxID + "\"}"
+			TxInfoListObj.TxInfoList = append(TxInfoListObj.TxInfoList,jsonResp)
+		 // 	return shim.Error(jsonResp)
+		 }
+		TxInfoListObj.TxInfoList = append(TxInfoListObj.TxInfoList,string([]byte(TxInfo)))
+  }
+ TxInfoListAsByte,err:=json.Marshal(TxInfoListObj)
  if err != nil {
- 	jsonResp := "{\"Error\":\"Failed to get state for " + TxID + "\"}"
- 	return shim.Error(jsonResp)
-  }
- if TxInfo == nil {
- 	jsonResp := "{\"Error\":\"Nil content for " + TxID + "\"}"
- 	return shim.Error(jsonResp)
-  }
- return shim.Success(TxInfo)
+	 return shim.Error(err.Error())
+ }
+ return shim.Success(TxInfoListAsByte)
 }
 
 

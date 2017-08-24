@@ -170,9 +170,9 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Info("########### example_cc0 Invoke ###########")
 
 	function, args := stub.GetFunctionAndParameters()
-  if function == "add" {
+  if function == "proInfoUpload" {
 		// Deletes an entity from its state
-		return t.add(stub, args)
+		return t.proInfoUpload(stub, args)
 	}
 
 	if function == "delete" {
@@ -224,7 +224,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Error(fmt.Sprintf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0]))
 }
 
-func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *SimpleChaincode) proInfoUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var err error
 
 
