@@ -428,7 +428,7 @@ TRX_ID=$(curl -s -X POST \
   -d '{
 	"peers": ["localhost:8051"],
 	"fcn":"assetSaleAgreementUpload",
-	"args":["123","{\"Url\":\"www.qianbao/cc/11\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"}"]
+	"args":["zlls","123","{\"Url\":\"www.qianbao/cc/11\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"}"]
 }')
 echo "Transacton ID is $TRX_ID"
 echo
