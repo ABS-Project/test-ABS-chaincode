@@ -93,8 +93,8 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 	timestamp, _:= stub.GetTxTimestamp()
 	PartnerInfoObj.CreatedTime = time.Unix(timestamp.Seconds, int64(timestamp.Nanos))
 	var OperateLog []string
-	TxID := stub.GetTxID()
-	OperateLog =append(OperateLog,TxID)
+	// TxID := stub.GetTxID()
+	// OperateLog =append(OperateLog,TxID)
 	PartnerInfoObj.OperateLog = OperateLog
 	jsonAsBytes,_:= json.Marshal(PartnerInfoObj)
 	err = stub.PutState(UserName,[]byte(jsonAsBytes))
