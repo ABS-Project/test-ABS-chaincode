@@ -379,6 +379,7 @@ curl -s -X GET \
 echo
 echo
 
+
 echo "POST invoke chaincode TxRecorder on peers of Org2"
 echo "POST add TxRecorder"
 echo
@@ -402,6 +403,7 @@ curl -s -X GET \
   -H "content-type: application/json"
 echo
 echo
+
 
 echo "POST invoke chaincode ClaimsPackageInfo on peers of Org2"
 echo "POST add ClaimsPackageInfo"
@@ -431,6 +433,15 @@ TRX_ID=$(curl -s -X POST \
 	"args":["zlls","123","{\"Url\":\"www.qianbao/cc/11\",\"Hashcode\":\"40b3fa8de4e01e5b37928ff03c7c6f0b\"}"]
 }')
 echo "Transacton ID is $TRX_ID"
+echo
+
+echo "GET query chaincode AllTxRecorder on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/TxRecorder?peer=peer1&fcn=queryAllTxRecord&args=%5B%22%22%2C%22%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
 echo
 
 echo "POST invoke chaincode  on peers of Org2"
