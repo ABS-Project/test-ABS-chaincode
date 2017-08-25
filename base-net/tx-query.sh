@@ -20,7 +20,7 @@ echo
 echo "GET query chaincode BusinessPartnerInfo on peer1 of Org1"
 echo
 curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo?peer=peer1&fcn=query&args=%5B%22zlls%22%5D" \
+  "http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo?peer=peer1&fcn=queryBusinessPartnerInfo&args=%5B%22zlls%22%5D" \
   -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json"
 echo

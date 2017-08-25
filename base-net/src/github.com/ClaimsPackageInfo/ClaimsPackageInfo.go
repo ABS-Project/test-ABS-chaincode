@@ -158,14 +158,13 @@ type PriorityAssetSubscriptionAgreementStruct struct {
 // TransferRecord  struct:
 // 包含所有信息的struct
 type TransferRecordStruct struct {
-	ProductID            string  `json:"ProductID"`
-	WaterFlowNumber      string  `json:"WaterFlowNumber"`
-  WaterFlowNumberTime  string  `json:"WaterFlowNumberTime"`
-	FromAccount          string  `json:"FromAccount"`
-	ToAccount            string  `json:"ToAccount"`
-	BbMount              float64 `json:"BbMount"`
+	ProductID           string  `json:"ProductID"`
+	WaterFlowNumber     string  `json:"WaterFlowNumber"`
+	WaterFlowNumberTime string  `json:"WaterFlowNumberTime"`
+	FromAccount         string  `json:"FromAccount"`
+	ToAccount           string  `json:"ToAccount"`
+	BbMount             float64 `json:"BbMount"`
 }
-
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Info("########### ClaimsPackageInfo Init ###########")
@@ -182,18 +181,13 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.proInfoUpload(stub, args)
 	}
 
-	if function == "delete" {
-		// Deletes an entity from its state
-		return t.delete(stub, args)
-	}
-
-	if function == "query" {
+	if function == "queryClaimsPackageInfo" {
 		// queries an entity state
-		return t.query(stub, args)
+		return t.queryClaimsPackageInfo(stub, args)
 	}
-	if function == "update" {
+	if function == "updateClaimsPackageInfo" {
 		// Deletes an entity from its state
-		return t.update(stub, args)
+		return t.updateClaimsPackageInfo(stub, args)
 	}
 
 	if function == "queryTransferRecord" {
@@ -217,19 +211,19 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.productPlanInstructionUpload(stub, args)
 	} else if function == "inferiorAssetObtain" {
 		return t.inferiorAssetObtain(stub, args)
-	}else if function == "inferiorAssetObtainRecording" {
+	} else if function == "inferiorAssetObtainRecording" {
 		return t.inferiorAssetObtainRecording(stub, args)
-	}else if function == "subprimeAssetObtain" {
+	} else if function == "subprimeAssetObtain" {
 		return t.subprimeAssetObtain(stub, args)
-	}else if function == "subprimeAssetsObtainRecording" {
+	} else if function == "subprimeAssetsObtainRecording" {
 		return t.subprimeAssetsObtainRecording(stub, args)
-	}else if function == "priorityAssetObtain" {
+	} else if function == "priorityAssetObtain" {
 		return t.priorityAssetObtain(stub, args)
-	}else if function == "priorityAssetObtainRecording" {
+	} else if function == "priorityAssetObtainRecording" {
 		return t.priorityAssetObtainRecording(stub, args)
-	}else if function == "breakAccountRecording" {
+	} else if function == "breakAccountRecording" {
 		return t.breakAccountRecording(stub, args)
-	}else if function == "finishBreakAccountRecording" {
+	} else if function == "finishBreakAccountRecording" {
 		return t.finishBreakAccountRecording(stub, args)
 	}
 
@@ -522,7 +516,7 @@ func (t *SimpleChaincode) assetRatingInstructionUpload(stub shim.ChaincodeStubIn
 	}
 
 	AssetRatingInstructionObj := AssetRatingInstructionStruct{}
-	err = json.Unmarshal([]byte(AssetRatingInstructionInfo),&AssetRatingInstructionObj)
+	err = json.Unmarshal([]byte(AssetRatingInstructionInfo), &AssetRatingInstructionObj)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -847,7 +841,7 @@ func (t *SimpleChaincode) inferiorAssetObtain(stub shim.ChaincodeStubInterface, 
 // input：Initiators, ProductID, RecordID, TransferRecordStruct
 // ============================================================================================================================
 func (t *SimpleChaincode) inferiorAssetObtainRecording(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-  var err error
+	var err error
 	if len(args) != 4 {
 		return shim.Error("Incorrect number of arguments. Expecting 4")
 	}
@@ -856,63 +850,63 @@ func (t *SimpleChaincode) inferiorAssetObtainRecording(stub shim.ChaincodeStubIn
 	RecordID := args[2]
 	TransferRecordInfo := args[3]
 
-	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	ClaimsPackageInfoAsBytes, err := stub.GetState(ProductID)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-	if( ClaimsPackageInfoObj.Status != "InferiorAssetObtain" ){
+	if ClaimsPackageInfoObj.Status != "InferiorAssetObtain" {
 		return shim.Error("Error Status!")
 	}
 
 	TransferRecordObj := TransferRecordStruct{}
-	err = json.Unmarshal([]byte(TransferRecordInfo),&TransferRecordObj)
+	err = json.Unmarshal([]byte(TransferRecordInfo), &TransferRecordObj)
 	if err != nil {
-	  return shim.Error(err.Error())
+		return shim.Error(err.Error())
 	}
 	TransferRecordAsBytes, err := json.Marshal(TransferRecordObj)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	err = stub.PutState(RecordID, []byte(TransferRecordAsBytes))
-  if err != nil{
+	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	ClaimsPackageInfoObj.Status = "InferiorAssetObtainRecording"
-  ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+	ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-  err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
-  if err != nil{
+	err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+	if err != nil {
 		return shim.Error(err.Error())
 	}
-  fmt.Println("AssetSaleAgreementUpload done")
+	fmt.Println("AssetSaleAgreementUpload done")
 
 	// 现在开始记录操作
 	var TxInfo [8]string
-  TxInfo[0] = stub.GetTxID()                  //交易ID
-	TxInfo[1] = args[0]                         //交易发起人
-	TxInfo[2] = ProductID                       //产品ID
-	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
-	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-	TxInfo[5] = "inferiorAssetObtainRecording"  //所调函数
-	TxInfo[6] = args[3]                         //所传参数
-	TxInfo[7] = "代币节点记录劣后级资产购买的转账情况" //交易描述
+	TxInfo[0] = stub.GetTxID()                                //交易ID
+	TxInfo[1] = args[0]                                       //交易发起人
+	TxInfo[2] = ProductID                                     //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z") //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"                           //链码名称
+	TxInfo[5] = "inferiorAssetObtainRecording"                //所调函数
+	TxInfo[6] = args[3]                                       //所传参数
+	TxInfo[7] = "代币节点记录劣后级资产购买的转账情况"                          //交易描述
 
 	functionName := "add"
-	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	invokeArgs := util.ToChaincodeArgs(functionName, TxInfo[0], TxInfo[1], TxInfo[2], TxInfo[3], TxInfo[4], TxInfo[5], TxInfo[6], TxInfo[7])
 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
 	if response.Status != shim.OK {
-			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-			fmt.Printf(errStr)
-			return shim.Error(errStr)
-		}
+		errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+		fmt.Printf(errStr)
+		return shim.Error(errStr)
+	}
 	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-  fmt.Println("success add a new TxInfo")
+	fmt.Println("success add a new TxInfo")
 	//记录操作完成
 
 	return shim.Success(nil)
@@ -923,7 +917,7 @@ func (t *SimpleChaincode) inferiorAssetObtainRecording(stub shim.ChaincodeStubIn
 // input：Initiators, ProductID, UrlAndHashInfo
 // ============================================================================================================================
 func (t *SimpleChaincode) subprimeAssetObtain(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-  var err error
+	var err error
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
@@ -931,57 +925,57 @@ func (t *SimpleChaincode) subprimeAssetObtain(stub shim.ChaincodeStubInterface, 
 	ProductID := args[1]
 	UrlAndHashInfo := args[2]
 
-	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	ClaimsPackageInfoAsBytes, err := stub.GetState(ProductID)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-	if( ClaimsPackageInfoObj.Status != "InferiorAssetObtainRecording" ){
+	if ClaimsPackageInfoObj.Status != "InferiorAssetObtainRecording" {
 		return shim.Error("Error Status!")
 	}
 
 	SubprimeAssetSubscriptionAgreementObj := SubprimeAssetSubscriptionAgreementStruct{}
-	err = json.Unmarshal([]byte(UrlAndHashInfo),&SubprimeAssetSubscriptionAgreementObj)
+	err = json.Unmarshal([]byte(UrlAndHashInfo), &SubprimeAssetSubscriptionAgreementObj)
 	if err != nil {
-	  return shim.Error(err.Error())
+		return shim.Error(err.Error())
 	}
 	ClaimsPackageInfoObj.SubprimeAssetSubscriptionAgreement = SubprimeAssetSubscriptionAgreementObj
 
 	ClaimsPackageInfoObj.Status = "SubprimeAssetObtain"
 
-  ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+	ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-  err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
-  if err != nil{
+	err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+	if err != nil {
 		return shim.Error(err.Error())
 	}
-  fmt.Println("SubprimeAssetObtain done")
+	fmt.Println("SubprimeAssetObtain done")
 
 	// 现在开始记录操作
 	var TxInfo [8]string
-  TxInfo[0] = stub.GetTxID()                  //交易ID
-	TxInfo[1] = args[0]                         //交易发起人
-	TxInfo[2] = ProductID                       //产品ID
-	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
-	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-	TxInfo[5] = "subprimeAssetObtain"     //所调函数
-	TxInfo[6] = args[2]                         //所传参数
-	TxInfo[7] = "次优级资产购买方上传次优级资产认购协议"               //交易描述
+	TxInfo[0] = stub.GetTxID()                                //交易ID
+	TxInfo[1] = args[0]                                       //交易发起人
+	TxInfo[2] = ProductID                                     //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z") //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"                           //链码名称
+	TxInfo[5] = "subprimeAssetObtain"                         //所调函数
+	TxInfo[6] = args[2]                                       //所传参数
+	TxInfo[7] = "次优级资产购买方上传次优级资产认购协议"                         //交易描述
 
 	functionName := "add"
-	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	invokeArgs := util.ToChaincodeArgs(functionName, TxInfo[0], TxInfo[1], TxInfo[2], TxInfo[3], TxInfo[4], TxInfo[5], TxInfo[6], TxInfo[7])
 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
 	if response.Status != shim.OK {
-			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-			fmt.Printf(errStr)
-			return shim.Error(errStr)
-		}
+		errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+		fmt.Printf(errStr)
+		return shim.Error(errStr)
+	}
 	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-  fmt.Println("success add a new TxInfo")
+	fmt.Println("success add a new TxInfo")
 	//记录操作完成
 
 	return shim.Success(nil)
@@ -1001,63 +995,63 @@ func (t *SimpleChaincode) subprimeAssetsObtainRecording(stub shim.ChaincodeStubI
 	RecordID := args[2]
 	TransferRecordInfo := args[3]
 
-	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	ClaimsPackageInfoAsBytes, err := stub.GetState(ProductID)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-	if( ClaimsPackageInfoObj.Status != "SubprimeAssetObtain" ){
+	if ClaimsPackageInfoObj.Status != "SubprimeAssetObtain" {
 		return shim.Error("Error Status!")
 	}
 
 	TransferRecordObj := TransferRecordStruct{}
-	err = json.Unmarshal([]byte(TransferRecordInfo),&TransferRecordObj)
+	err = json.Unmarshal([]byte(TransferRecordInfo), &TransferRecordObj)
 	if err != nil {
-	  return shim.Error(err.Error())
+		return shim.Error(err.Error())
 	}
 	TransferRecordAsBytes, err := json.Marshal(TransferRecordObj)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	err = stub.PutState(RecordID, []byte(TransferRecordAsBytes))
-  if err != nil{
+	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	ClaimsPackageInfoObj.Status = "SubprimeAssetsObtainRecording"
-  ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+	ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-  err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
-  if err != nil{
+	err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+	if err != nil {
 		return shim.Error(err.Error())
 	}
-  fmt.Println("SubprimeAssetsObtainRecording done")
+	fmt.Println("SubprimeAssetsObtainRecording done")
 
 	// 现在开始记录操作
 	var TxInfo [8]string
-  TxInfo[0] = stub.GetTxID()                  //交易ID
-	TxInfo[1] = args[0]                         //交易发起人
-	TxInfo[2] = ProductID                       //产品ID
-	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
-	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-	TxInfo[5] = "subprimeAssetsObtainRecording"  //所调函数
-	TxInfo[6] = args[3]                         //所传参数
-	TxInfo[7] = "代币节点记录次优级资产购买的转账情况" //交易描述
+	TxInfo[0] = stub.GetTxID()                                //交易ID
+	TxInfo[1] = args[0]                                       //交易发起人
+	TxInfo[2] = ProductID                                     //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z") //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"                           //链码名称
+	TxInfo[5] = "subprimeAssetsObtainRecording"               //所调函数
+	TxInfo[6] = args[3]                                       //所传参数
+	TxInfo[7] = "代币节点记录次优级资产购买的转账情况"                          //交易描述
 
 	functionName := "add"
-	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	invokeArgs := util.ToChaincodeArgs(functionName, TxInfo[0], TxInfo[1], TxInfo[2], TxInfo[3], TxInfo[4], TxInfo[5], TxInfo[6], TxInfo[7])
 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
 	if response.Status != shim.OK {
-			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-			fmt.Printf(errStr)
-			return shim.Error(errStr)
-		}
+		errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+		fmt.Printf(errStr)
+		return shim.Error(errStr)
+	}
 	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-  fmt.Println("success add a new TxInfo")
+	fmt.Println("success add a new TxInfo")
 	//记录操作完成
 
 	return shim.Success(nil)
@@ -1068,7 +1062,7 @@ func (t *SimpleChaincode) subprimeAssetsObtainRecording(stub shim.ChaincodeStubI
 // input：Initiators, ProductID, UrlAndHashInfo
 // ============================================================================================================================
 func (t *SimpleChaincode) priorityAssetObtain(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-  var err error
+	var err error
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
@@ -1076,57 +1070,57 @@ func (t *SimpleChaincode) priorityAssetObtain(stub shim.ChaincodeStubInterface, 
 	ProductID := args[1]
 	UrlAndHashInfo := args[2]
 
-	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	ClaimsPackageInfoAsBytes, err := stub.GetState(ProductID)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-	if( ClaimsPackageInfoObj.Status != "SubprimeAssetsObtainRecording" ){
+	if ClaimsPackageInfoObj.Status != "SubprimeAssetsObtainRecording" {
 		return shim.Error("Error Status!")
 	}
 
 	PriorityAssetSubscriptionAgreementObj := PriorityAssetSubscriptionAgreementStruct{}
-	err = json.Unmarshal([]byte(UrlAndHashInfo),&PriorityAssetSubscriptionAgreementObj)
+	err = json.Unmarshal([]byte(UrlAndHashInfo), &PriorityAssetSubscriptionAgreementObj)
 	if err != nil {
-	  return shim.Error(err.Error())
+		return shim.Error(err.Error())
 	}
 	ClaimsPackageInfoObj.PriorityAssetSubscriptionAgreement = PriorityAssetSubscriptionAgreementObj
 
 	ClaimsPackageInfoObj.Status = "PriorityAssetObtain"
 
-  ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+	ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-  err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
-  if err != nil{
+	err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+	if err != nil {
 		return shim.Error(err.Error())
 	}
-  fmt.Println("PriorityAssetObtain done")
+	fmt.Println("PriorityAssetObtain done")
 
 	// 现在开始记录操作
 	var TxInfo [8]string
-  TxInfo[0] = stub.GetTxID()                  //交易ID
-	TxInfo[1] = args[0]                         //交易发起人
-	TxInfo[2] = ProductID                       //产品ID
-	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
-	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-	TxInfo[5] = "priorityAssetObtain"     //所调函数
-	TxInfo[6] = args[2]                         //所传参数
-	TxInfo[7] = "优先级资产购买方上传优先级资产认购协议"               //交易描述
+	TxInfo[0] = stub.GetTxID()                                //交易ID
+	TxInfo[1] = args[0]                                       //交易发起人
+	TxInfo[2] = ProductID                                     //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z") //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"                           //链码名称
+	TxInfo[5] = "priorityAssetObtain"                         //所调函数
+	TxInfo[6] = args[2]                                       //所传参数
+	TxInfo[7] = "优先级资产购买方上传优先级资产认购协议"                         //交易描述
 
 	functionName := "add"
-	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	invokeArgs := util.ToChaincodeArgs(functionName, TxInfo[0], TxInfo[1], TxInfo[2], TxInfo[3], TxInfo[4], TxInfo[5], TxInfo[6], TxInfo[7])
 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
 	if response.Status != shim.OK {
-			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-			fmt.Printf(errStr)
-			return shim.Error(errStr)
-		}
+		errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+		fmt.Printf(errStr)
+		return shim.Error(errStr)
+	}
 	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-  fmt.Println("success add a new TxInfo")
+	fmt.Println("success add a new TxInfo")
 	//记录操作完成
 
 	return shim.Success(nil)
@@ -1146,63 +1140,63 @@ func (t *SimpleChaincode) priorityAssetObtainRecording(stub shim.ChaincodeStubIn
 	RecordID := args[2]
 	TransferRecordInfo := args[3]
 
-	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	ClaimsPackageInfoAsBytes, err := stub.GetState(ProductID)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-	if( ClaimsPackageInfoObj.Status != "PriorityAssetObtain" ){
+	if ClaimsPackageInfoObj.Status != "PriorityAssetObtain" {
 		return shim.Error("Error Status!")
 	}
 
 	TransferRecordObj := TransferRecordStruct{}
-	err = json.Unmarshal([]byte(TransferRecordInfo),&TransferRecordObj)
+	err = json.Unmarshal([]byte(TransferRecordInfo), &TransferRecordObj)
 	if err != nil {
-	  return shim.Error(err.Error())
+		return shim.Error(err.Error())
 	}
 	TransferRecordAsBytes, err := json.Marshal(TransferRecordObj)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	err = stub.PutState(RecordID, []byte(TransferRecordAsBytes))
-  if err != nil{
+	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	ClaimsPackageInfoObj.Status = "PriorityAssetObtainRecording"
-  ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+	ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-  err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
-  if err != nil{
+	err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+	if err != nil {
 		return shim.Error(err.Error())
 	}
-  fmt.Println("PriorityAssetObtainRecording done")
+	fmt.Println("PriorityAssetObtainRecording done")
 
 	// 现在开始记录操作
 	var TxInfo [8]string
-  TxInfo[0] = stub.GetTxID()                  //交易ID
-	TxInfo[1] = args[0]                         //交易发起人
-	TxInfo[2] = ProductID                       //产品ID
-	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
-	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-	TxInfo[5] = "priorityAssetObtainRecording"  //所调函数
-	TxInfo[6] = args[3]                         //所传参数
-	TxInfo[7] = "代币节点记录优先级资产购买的转账情况" //交易描述
+	TxInfo[0] = stub.GetTxID()                                //交易ID
+	TxInfo[1] = args[0]                                       //交易发起人
+	TxInfo[2] = ProductID                                     //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z") //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"                           //链码名称
+	TxInfo[5] = "priorityAssetObtainRecording"                //所调函数
+	TxInfo[6] = args[3]                                       //所传参数
+	TxInfo[7] = "代币节点记录优先级资产购买的转账情况"                          //交易描述
 
 	functionName := "add"
-	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	invokeArgs := util.ToChaincodeArgs(functionName, TxInfo[0], TxInfo[1], TxInfo[2], TxInfo[3], TxInfo[4], TxInfo[5], TxInfo[6], TxInfo[7])
 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
 	if response.Status != shim.OK {
-			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-			fmt.Printf(errStr)
-			return shim.Error(errStr)
-		}
+		errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+		fmt.Printf(errStr)
+		return shim.Error(errStr)
+	}
 	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-  fmt.Println("success add a new TxInfo")
+	fmt.Println("success add a new TxInfo")
 	//记录操作完成
 
 	return shim.Success(nil)
@@ -1222,54 +1216,54 @@ func (t *SimpleChaincode) breakAccountRecording(stub shim.ChaincodeStubInterface
 	RecordID := args[2]
 	TransferRecordInfo := args[3]
 
-	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	ClaimsPackageInfoAsBytes, err := stub.GetState(ProductID)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-	if( ClaimsPackageInfoObj.Status != "PriorityAssetObtainRecording" ){
+	if ClaimsPackageInfoObj.Status != "PriorityAssetObtainRecording" {
 		return shim.Error("Error Status!")
 	}
 
 	TransferRecordObj := TransferRecordStruct{}
-	err = json.Unmarshal([]byte(TransferRecordInfo),&TransferRecordObj)
+	err = json.Unmarshal([]byte(TransferRecordInfo), &TransferRecordObj)
 	if err != nil {
-	  return shim.Error(err.Error())
+		return shim.Error(err.Error())
 	}
 	TransferRecordAsBytes, err := json.Marshal(TransferRecordObj)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	err = stub.PutState(RecordID, []byte(TransferRecordAsBytes))
-  if err != nil{
+	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-  fmt.Println("Have a breakAccountRecording")
+	fmt.Println("Have a breakAccountRecording")
 
 	// 现在开始记录操作
 	var TxInfo [8]string
-  TxInfo[0] = stub.GetTxID()                  //交易ID
-	TxInfo[1] = args[0]                         //交易发起人
-	TxInfo[2] = ProductID                       //产品ID
-	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
-	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-	TxInfo[5] = "breakAccountRecording"  //所调函数
-	TxInfo[6] = args[3]                         //所传参数
-	TxInfo[7] = "代币节点进行了一次分帐的记录" //交易描述
+	TxInfo[0] = stub.GetTxID()                                //交易ID
+	TxInfo[1] = args[0]                                       //交易发起人
+	TxInfo[2] = ProductID                                     //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z") //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"                           //链码名称
+	TxInfo[5] = "breakAccountRecording"                       //所调函数
+	TxInfo[6] = args[3]                                       //所传参数
+	TxInfo[7] = "代币节点进行了一次分帐的记录"                              //交易描述
 
 	functionName := "add"
-	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	invokeArgs := util.ToChaincodeArgs(functionName, TxInfo[0], TxInfo[1], TxInfo[2], TxInfo[3], TxInfo[4], TxInfo[5], TxInfo[6], TxInfo[7])
 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
 	if response.Status != shim.OK {
-			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-			fmt.Printf(errStr)
-			return shim.Error(errStr)
-		}
+		errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+		fmt.Printf(errStr)
+		return shim.Error(errStr)
+	}
 	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-  fmt.Println("success add a new TxInfo")
+	fmt.Println("success add a new TxInfo")
 	//记录操作完成
 
 	return shim.Success(nil)
@@ -1287,46 +1281,46 @@ func (t *SimpleChaincode) finishBreakAccountRecording(stub shim.ChaincodeStubInt
 
 	ProductID := args[1]
 
-	ClaimsPackageInfoAsBytes, err :=  stub.GetState(ProductID)
+	ClaimsPackageInfoAsBytes, err := stub.GetState(ProductID)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	ClaimsPackageInfoObj := ClaimsPackageInfoStruct{}
 	json.Unmarshal(ClaimsPackageInfoAsBytes, &ClaimsPackageInfoObj)
-	if( ClaimsPackageInfoObj.Status != "PriorityAssetObtainRecording" ){
+	if ClaimsPackageInfoObj.Status != "PriorityAssetObtainRecording" {
 		return shim.Error("Error Status!")
 	}
 	ClaimsPackageInfoObj.Status = "BreakAccountRecording"
-  ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
+	ClaimsPackageInfoAsBytes, err = json.Marshal(ClaimsPackageInfoObj)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-  err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
-  if err != nil{
+	err = stub.PutState(ProductID, []byte(ClaimsPackageInfoAsBytes))
+	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	// 现在开始记录操作
 	var TxInfo [8]string
-  TxInfo[0] = stub.GetTxID()                  //交易ID
-	TxInfo[1] = args[0]                         //交易发起人
-	TxInfo[2] = ProductID                       //产品ID
-	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z")      //交易时间
-	TxInfo[4] = "ClaimsPackageInfo"             //链码名称
-	TxInfo[5] = "finishBreakAccountRecording"  //所调函数
-	TxInfo[6] = "无参数"                         //所传参数
-	TxInfo[7] = "完成了分帐"                      //交易描述
+	TxInfo[0] = stub.GetTxID()                                //交易ID
+	TxInfo[1] = args[0]                                       //交易发起人
+	TxInfo[2] = ProductID                                     //产品ID
+	TxInfo[3] = time.Now().Format("2006-01-02T15:04:05.000Z") //交易时间
+	TxInfo[4] = "ClaimsPackageInfo"                           //链码名称
+	TxInfo[5] = "finishBreakAccountRecording"                 //所调函数
+	TxInfo[6] = "无参数"                                         //所传参数
+	TxInfo[7] = "完成了分帐"                                       //交易描述
 
 	functionName := "add"
-	invokeArgs := util.ToChaincodeArgs(functionName,TxInfo[0],TxInfo[1],TxInfo[2],TxInfo[3],TxInfo[4],TxInfo[5],TxInfo[6],TxInfo[7])
+	invokeArgs := util.ToChaincodeArgs(functionName, TxInfo[0], TxInfo[1], TxInfo[2], TxInfo[3], TxInfo[4], TxInfo[5], TxInfo[6], TxInfo[7])
 	response := stub.InvokeChaincode(TxRecorderChaincodeName, invokeArgs, TxRecorderChaincodeChannel)
 	if response.Status != shim.OK {
-			errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
-			fmt.Printf(errStr)
-			return shim.Error(errStr)
-		}
+		errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", string(response.Payload))
+		fmt.Printf(errStr)
+		return shim.Error(errStr)
+	}
 	//fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-  fmt.Println("success add a new TxInfo")
+	fmt.Println("success add a new TxInfo")
 	//记录操作完成
 
 	return shim.Success(nil)
@@ -1342,25 +1336,15 @@ func (t *SimpleChaincode) queryTransferRecord(stub shim.ChaincodeStubInterface, 
 	}
 
 	TransferRecordAsBytes, err := stub.GetState(args[0])
-	if err != nil{
+	if err != nil {
 		return shim.Error("fail to query transfer record")
 	}
 
 	return shim.Success(TransferRecordAsBytes)
 }
 
-
-// Deletes an entity from state
-func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
-	}
-
-	return shim.Success(nil)
-}
-
 // Query callback representing the query of a chaincode
-func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *SimpleChaincode) queryClaimsPackageInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
 	}
@@ -1377,7 +1361,7 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 	return shim.Success(ClaimsPackageInfo)
 }
 
-func (t *SimpleChaincode) update(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *SimpleChaincode) updateClaimsPackageInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	return shim.Success(nil)
 }

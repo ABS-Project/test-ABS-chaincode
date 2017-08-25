@@ -350,7 +350,7 @@ TRX_ID=$(curl -s -X POST \
   -H "content-type: application/json" \
   -d '{
 	"peers": ["localhost:8051"],
-	"fcn":"add",
+	"fcn":"addBusinessPartnerInfo",
 	"args":["{\"UserName\":\"zlls\",\"Organization\":\"律师事务所\",\"Company\":\"北京市中伦律师事务所\",\"Account\":\"zlls124\"}"]
 }')
 echo "Transacton ID is $TRX_ID"
@@ -365,7 +365,7 @@ TRX_ID=$(curl -s -X POST \
   -H "content-type: application/json" \
   -d '{
 	"peers": ["localhost:8051"],
-	"fcn":"update",
+	"fcn":"updateBusinessPartnerInfo",
 	"args":["{\"UserName\":\"zlls\",\"Organization\":\"律师事务所\",\"Company\":\"北京市中伦律师事务所\",\"Account\":\"zlls666\"}"]
 }')
 echo "Transacton ID is $TRX_ID"
@@ -373,7 +373,7 @@ echo "Transacton ID is $TRX_ID"
 echo "GET query chaincode BusinessPartnerInfo on peer1 of Org1"
 echo
 curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo?peer=peer1&fcn=query&args=%5B%22zlls%22%5D" \
+  "http://localhost:4000/channels/mychannel/chaincodes/BusinessPartnerInfo?peer=peer1&fcn=queryBusinessPartnerInfo&args=%5B%22zlls%22%5D" \
   -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json"
 echo
@@ -680,7 +680,7 @@ echo
 echo "GET query chaincode ClaimsPackageInfo on peer1 of Org1"
 echo
 curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo?peer=peer1&fcn=query&args=%5B%22123%22%5D" \
+  "http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo?peer=peer1&fcn=queryClaimsPackageInfo&args=%5B%22123%22%5D" \
   -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json"
 echo
