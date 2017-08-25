@@ -7,16 +7,5 @@
 运行clear-db.sh删除ca证书目录的db
 运行runAPP.sh
 运行testAPIS
-
-
-========测试脚本名称对应==========
-bpinfo-test.sh-----BusinessPartnerInfo.go    可用
-
-cpinfo-test.sh-----ClaimsPackageInfo.go    已过期
-
-txrecorder.sh -----TxRecorder.go           已过期
-
-===========加操作日志联合测试==============   可用
-
-    tx-cp-test.sh
-    tx-query.sh  ------将上一步返回的TxID替换查询，测试上一步操作记录是否成功
+tx-cp-test.sh
+tx-query.sh  ------将上一步返回的TxID替换查询，测试上一步操作记录是否成功，还可以查询上面操作是否都已记录到用户的OperateLog里面
