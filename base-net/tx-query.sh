@@ -1,3 +1,13 @@
+#!/bin/bash
+#
+# Copyright Tongji University. All Rights Reserved.
+# 查询操作汇总
+# SPDX-License-Identifier: Apache-2.0
+
+
+#======================================================================
+#用户注册，获取操作权限
+#======================================================================
 echo "POST request Enroll on Org1  ..."
 echo
 ORG1_TOKEN=$(curl -s -X POST \
@@ -9,6 +19,9 @@ ORG1_TOKEN=$(echo $ORG1_TOKEN | jq ".token" | sed "s/\"//g")
 echo
 echo "ORG1 token is $ORG1_TOKEN"
 
+#======================================================================
+#获取每一个用户名下的操作记录
+#======================================================================
 echo "GET query chaincode TxRecorder on peer1 of Org1"
 echo
 curl -s -X GET \
@@ -17,6 +30,9 @@ curl -s -X GET \
   -H "content-type: application/json"
 echo
 
+#======================================================================
+#查询商业合作伙伴的信息
+#======================================================================
 echo "GET query chaincode BusinessPartnerInfo on peer1 of Org1"
 echo
 curl -s -X GET \
@@ -25,6 +41,9 @@ curl -s -X GET \
   -H "content-type: application/json"
 echo
 
+#======================================================================
+#批量查询操作记录
+#======================================================================
 echo "GET query chaincode AllTxRecorder on peer1 of Org1"
 echo
 curl -s -X GET \
@@ -34,7 +53,9 @@ curl -s -X GET \
 echo
 echo
 
-
+#======================================================================
+#查询转账记录
+#======================================================================
 echo "GET query chaincode TransferRecord on peer1 of Org1"
 echo
 curl -s -X GET \

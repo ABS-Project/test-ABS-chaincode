@@ -21,5 +21,8 @@ Download docker images
 运行clear-db.sh删除ca证书目录的db
 运行runAPP.sh
 运行testAPIS
-tx-cp-test.sh
-tx-query.sh  ------将上一步返回的TxID替换查询，测试上一步操作记录是否成功，还可以查询上面操作是否都已记录到用户的OperateLog里面
+tx-cp-test.sh  -----流程测试，测试业务流程相关的函数操作
+tx-query.sh  ------相关的查询函数的汇总
+          备注：（1）查询脚本依赖于上一个测试脚本的初始化过程
+               （2）查询时需将上一步返回的TxID替换查询，可以测试上一步操作记录是否成功，
+               还可以查询上面操作是否都已记录到用户的OperateLog里面

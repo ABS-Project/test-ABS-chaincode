@@ -1,10 +1,12 @@
 #!/bin/bash
 #
-# Copyright Tongji Corp. All Rights Reserved.
-#
+# Copyright Tongji University. All Rights Reserved.
+# 业务流程测试
 # SPDX-License-Identifier: Apache-2.0
-#
 
+#======================================================================
+#用户注册，获取操作权限
+#======================================================================
 jq --version > /dev/null 2>&1
 if [ $? -ne 0 ]; then
 	echo "Please Install 'jq' https://stedolan.github.io/jq/ to execute this script"
@@ -56,6 +58,9 @@ echo
 echo "ORG4 token is $ORG4_TOKEN"
 echo
 
+#======================================================================
+#创建并加入channal
+#======================================================================
 echo
 echo "POST request Create channel  ..."
 echo
@@ -118,6 +123,9 @@ curl -s -X POST \
 echo
 echo
 
+#======================================================================
+#安装并初始化相关的合约
+#======================================================================
 echo "POST Install chaincode BusinessPartnerInfo on Org1"
 echo
 curl -s -X POST \
@@ -132,7 +140,6 @@ curl -s -X POST \
 }'
 echo
 echo
-
 
 echo "POST Install chaincode BusinessPartnerInfo on Org2"
 echo
@@ -337,9 +344,15 @@ curl -s -X POST \
 	"args":[]
 }'
 echo
+
+
 ###############################################################################
 ##########    以上为各个链码的安装与初始化过程，下面为链码测试过程   ###################
 ###############################################################################
+
+#======================================================================
+#增添，更新，查询商业伙伴
+#======================================================================
 echo
 echo "POST invoke chaincode BusinessPartnerInfo on peers of Org2"
 echo "POST add BusinessPartnerInfo"
@@ -379,7 +392,9 @@ curl -s -X GET \
 echo
 echo
 
-
+#======================================================================
+# 单独测试增加，查询一个操作记录
+#======================================================================
 echo "POST invoke chaincode TxRecorder on peers of Org2"
 echo "POST add TxRecorder"
 echo
@@ -404,7 +419,9 @@ curl -s -X GET \
 echo
 echo
 
-
+#======================================================================
+# 开始业务流程，后台自动依靠状态流转
+#======================================================================
 echo "POST invoke chaincode ClaimsPackageInfo on peers of Org2"
 echo "POST add ClaimsPackageInfo"
 echo
@@ -435,6 +452,9 @@ TRX_ID=$(curl -s -X POST \
 echo "Transacton ID is $TRX_ID"
 echo
 
+#======================================================================
+# 通过交易记录批量查询函数检测之前的操作是否被记录
+#======================================================================
 echo "GET query chaincode AllTxRecorder on peer1 of Org1"
 echo
 curl -s -X GET \
@@ -624,22 +644,9 @@ TRX_ID=$(curl -s -X POST \
 echo "Transacton ID is $TRX_ID"
 echo
 
-#post请求可以排序，但是查询结果没有返回客户端
-# echo "POST invoke chaincode  on peers of Org2"
-# echo "POST queryTransferRecord"
-# echo
-# TRX_ID=$(curl -s -X POST \
-#   http://localhost:4000/channels/mychannel/chaincodes/ClaimsPackageInfo \
-#   -H "authorization: Bearer $ORG2_TOKEN" \
-#   -H "content-type: application/json" \
-#   -d '{
-# 	"peers": ["localhost:8051"],
-# 	"fcn":"queryTransferRecord",
-# 	"args":["RecordID03"]
-# }')
-# echo "Transacton ID is $TRX_ID"
-# echo
-
+#======================================================================
+# 查询产生的分帐记录
+#======================================================================
 echo "GET query chaincode TransferRecord on peer1 of Org1"
 echo
 curl -s -X GET \
@@ -664,6 +671,9 @@ TRX_ID=$(curl -s -X POST \
 echo "Transacton ID is $TRX_ID"
 echo
 
+#======================================================================
+# 查询产生的分帐记录
+#======================================================================
 echo "GET query chaincode TransferRecord on peer1 of Org1"
 echo
 curl -s -X GET \
@@ -688,6 +698,9 @@ TRX_ID=$(curl -s -X POST \
 echo "Transacton ID is $TRX_ID"
 echo
 
+#======================================================================
+# 业务流程结束，最后查询一下产品的信息
+#======================================================================
 echo "GET query chaincode ClaimsPackageInfo on peer1 of Org1"
 echo
 curl -s -X GET \

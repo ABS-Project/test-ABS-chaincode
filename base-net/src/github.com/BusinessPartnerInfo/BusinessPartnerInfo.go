@@ -1,8 +1,7 @@
-// 债券基础信息相关的链码操作
-
-/*
-
- */
+//
+//  Copyright Tongji University. All Rights Reserved.
+//  用于操作记录的添加和查询
+//  SPDX-License-Identifier: Apache-2.0
 
 package main
 
@@ -10,14 +9,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
 var logger = shim.NewLogger("BusinessPartnerInfo")
 
-// SimpleChaincode example simple Chaincode implementation
+
 type SimpleChaincode struct {
 }
 

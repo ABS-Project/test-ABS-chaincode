@@ -1,8 +1,7 @@
-// 操作记录链码操作
-
-/*
-
- */
+//
+//  Copyright Tongji University. All Rights Reserved.
+//  用于操作记录的添加和查询
+//  SPDX-License-Identifier: Apache-2.0
 
 package main
 
@@ -11,7 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
 	"github.com/hyperledger/fabric/common/util"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -19,7 +17,6 @@ import (
 
 var logger = shim.NewLogger("TxRecorder")
 
-// SimpleChaincode example simple Chaincode implementation
 type SimpleChaincode struct {
 }
 
@@ -66,21 +63,26 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.queryAllTxRecord(stub, args)
 	}
 
-	logger.Errorf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0])
-	return shim.Error(fmt.Sprintf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0]))
+	logger.Errorf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'queryAllTxRecord'. But got: %v", args[0])
+	return shim.Error(fmt.Sprintf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'queryAllTxRecord'. But got: %v", args[0]))
 }
 
+// #======================================================================
+// # function：添加一条操作记录
+// # input： TxInfoStruct
+// #======================================================================
 func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var err error
 	if len(args) != 8 {
-		return shim.Error("Incorrect number of arguments. Expecting 2. ")
+		return shim.Error("Incorrect number of arguments. Expecting 8. ")
 	}
-
+  //交易ID
 	TxID := args[0]
 	TxTest, _ := stub.GetState(TxID)
 	if TxTest != nil {
 		return shim.Error("the Transaction is sexisted")
 	}
+	//交易人，需要到BusinessPartnerInfo合约中检验操作人是否存在
 	TxProposer := args[1]
 	functionName := "addOperateLog"
 	invokeArgs := util.ToChaincodeArgs(functionName, TxProposer, TxID)
@@ -108,7 +110,7 @@ func (t *SimpleChaincode) add(stub shim.ChaincodeStubInterface, args []string) p
 	return shim.Success(nil)
 }
 
-// Deletes an entity from state
+// 空操作，不允许删除操作记录
 func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
@@ -117,7 +119,10 @@ func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string
 	return shim.Success(nil)
 }
 
-// Query callback representing the query of a chaincode
+// #======================================================================
+// # function：查询某个用户的所有操作
+// # input： 用户属性下的操作记录ID列表
+// #======================================================================
 func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	var TxInfoList []string
@@ -141,9 +146,15 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 	return shim.Success(TxInfoListAsByte)
 }
 
-//通过key值批量查询TxRecorder
+// #======================================================================
+// # function：批量查询所有的操作日志
+// # input： 查询的开始开始键值和结束键值:[startKey, endKey string] 注意：键值可以为空字符串，表示没有边界，全部查询
+// # output：输出key:Value的键值对
+// #======================================================================
 func (t *SimpleChaincode) queryAllTxRecord(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2. ")
+	}
 	startKey := args[0]
 	endKey := args[1]
 

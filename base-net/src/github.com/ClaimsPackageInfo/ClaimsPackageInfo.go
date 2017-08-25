@@ -1,8 +1,7 @@
-// 债券基础信息相关的链码操作
-
-/*
-
- */
+//
+//  Copyright Tongji University. All Rights Reserved.
+//  债券包信息（债券包信息中有业务状态的控制，也就是业务处理的函数也在这里边）
+//  SPDX-License-Identifier: Apache-2.0
 
 package main
 
@@ -10,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
 	"github.com/hyperledger/fabric/common/util"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -152,11 +150,10 @@ type PriorityAssetSubscriptionAgreementStruct struct {
 
 //14.代币划账记录
 
-//15.分账记录
+//15.分账记录（划帐记录相同）
 
 // ============================================================================================================================
-// TransferRecord  struct:
-// 包含所有信息的struct
+// TransferRecord  struct: 划帐信息
 type TransferRecordStruct struct {
 	ProductID           string  `json:"ProductID"`
 	WaterFlowNumber     string  `json:"WaterFlowNumber"`
@@ -194,6 +191,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.queryTransferRecord(stub, args)
 	}
 
+	//基础债券信息上链后业务流程处理的函数
 	if function == "assetSaleAgreementUpload" {
 		return t.assetSaleAgreementUpload(stub, args)
 	} else if function == "guaranteeAgreementUpload" {
@@ -226,7 +224,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.finishBreakAccountRecording(stub, args)
 	}
 
-	logger.Errorf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0])
+	logger.Errorf("Unknown action, check the first argument. got: %v", args[0])
 	return shim.Error(fmt.Sprintf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0]))
 }
 
