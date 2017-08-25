@@ -171,22 +171,21 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Success(nil)
 }
 
-// Transaction makes payment of X units from A to B
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Info("########### ClaimsPackageInfo Invoke ###########")
 
 	function, args := stub.GetFunctionAndParameters()
 	if function == "proInfoUpload" {
-		// Deletes an entity from its state
+		// 资产打包时基础资产信息上传
 		return t.proInfoUpload(stub, args)
 	}
 
 	if function == "queryClaimsPackageInfo" {
-		// queries an entity state
+		// 查询ABS产品所有信息
 		return t.queryClaimsPackageInfo(stub, args)
 	}
 	if function == "updateClaimsPackageInfo" {
-		// Deletes an entity from its state
+		// 更新ABS产品信息，预留，未实现
 		return t.updateClaimsPackageInfo(stub, args)
 	}
 
@@ -231,6 +230,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Error(fmt.Sprintf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0]))
 }
 
+// 资产打包时基础资产信息上传
+// 两个参数：发起人的UserName，字符串化的资产包初始信息InitClaimsPackageInfo
 func (t *SimpleChaincode) proInfoUpload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var err error
 
@@ -1343,7 +1344,7 @@ func (t *SimpleChaincode) queryTransferRecord(stub shim.ChaincodeStubInterface, 
 	return shim.Success(TransferRecordAsBytes)
 }
 
-// Query callback representing the query of a chaincode
+// ABS产品信息查询，返回字符串化的ClaimsPackageInfo结构体
 func (t *SimpleChaincode) queryClaimsPackageInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")

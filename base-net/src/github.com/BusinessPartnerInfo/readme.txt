@@ -26,7 +26,7 @@ curl -s -X POST \
 	"peers": ["localhost:8051"],
 	"fcn":"add",
 	"args":["{\"UserName\":\"zlls\",\"Organization\":\"律师事务所\",\"Company\":\"北京市中伦律师事务所\",\"Account\":\"zlls124\"}"]
-}')
+}'
 返回值：b75f752f5b84b6c511e471f739843151f36a9e773ce5feff0ad41acd06df825e
 
 调用updateBusinessPartnerInfo()更新商业合作伙伴信息：
@@ -38,7 +38,7 @@ curl -s -X POST \
 	"peers": ["localhost:8051"],
 	"fcn":"updateBusinessPartnerInfo",
 	"args":["{\"UserName\":\"zlls\",\"Organization\":\"律师事务所\",\"Company\":\"北京市中伦律师事务所\",\"Account\":\"zlls666\"}"]
-}')
+}'
 返回值：c99ceff61f543d063f4783ac5511156b744199dc4a26bc8551ade0c8aea2db1c
 
 调用queryBusinessPartnerInfo()查询商业合作伙伴zlls信息：
