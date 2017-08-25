@@ -70,6 +70,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 }
 
 // 增加商业合作伙伴
+// 一个参数，字符串化的用户信息json
 func (t *SimpleChaincode) addBusinessPartnerInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var err error
 	if len(args) != 1 {
@@ -102,6 +103,7 @@ func (t *SimpleChaincode) addBusinessPartnerInfo(stub shim.ChaincodeStubInterfac
 }
 
 // 追加商业合作伙伴的操作TxID
+// 两个参数：UserName，TxID
 func (t *SimpleChaincode) addOperateLog(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var err error
 	if len(args) != 2 {
@@ -128,6 +130,7 @@ func (t *SimpleChaincode) addOperateLog(stub shim.ChaincodeStubInterface, args [
 }
 
 // 删除商业合作伙伴
+// 一个参数：UserName
 func (t *SimpleChaincode) deleteBusinessPartnerInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1 ")
@@ -150,6 +153,7 @@ func (t *SimpleChaincode) deleteBusinessPartnerInfo(stub shim.ChaincodeStubInter
 }
 
 // 根据用户名查询商业合作伙伴信息
+// 一个参数：UserName
 func (t *SimpleChaincode) queryBusinessPartnerInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 1 {
@@ -170,6 +174,7 @@ func (t *SimpleChaincode) queryBusinessPartnerInfo(stub shim.ChaincodeStubInterf
 }
 
 // 更新商业合作伙伴信息，创建日期和操作日志不可更改
+//  一个参数，新的字符串化的用户信息json
 func (t *SimpleChaincode) updateBusinessPartnerInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var err error
 	if len(args) != 1 {

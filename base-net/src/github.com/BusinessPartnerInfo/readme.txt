@@ -52,7 +52,9 @@ echo
 echo
 返回值：{"UserName":"zlls","Organization":"律师事务所","Company":"北京市中伦律师事务所","Account":"zlls666","CreatedTime":"2017-08-25T03:33:16.431Z","OperateLog":null}
 
-
+TxRecorder链码调用addOperateLog()给商业合作伙伴追加操作记录的TxID
+传入参数：UserName，TxID
+返回值为追加操作的TxID
 
 
 其他示例数据：
