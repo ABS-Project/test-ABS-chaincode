@@ -20,12 +20,12 @@ echo
 echo "ORG1 token is $ORG1_TOKEN"
 
 #======================================================================
-#获取每一个用户名下的操作记录
+#获取TxID列表里操作记录详情
 #======================================================================
 echo "GET query chaincode TxRecorder on peer1 of Org1"
 echo
 curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/TxRecorder?peer=peer1&fcn=query&args=%5B%22%22%5D" \
+  "http://localhost:4000/channels/mychannel/chaincodes/TxRecorder?peer=peer1&fcn=query&args=%5B%22特定操作的交易ID%22%5D" \
   -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json"
 echo
