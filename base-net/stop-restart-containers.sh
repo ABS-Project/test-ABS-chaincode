@@ -22,3 +22,4 @@ function dkrestart() {
 
 dkstop
 dkrestart
+PORT=4000 node app
