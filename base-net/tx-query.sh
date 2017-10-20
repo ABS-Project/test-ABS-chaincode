@@ -20,7 +20,7 @@ echo
 echo "ORG1 token is $ORG1_TOKEN"
 
 #======================================================================
-#获取TxID列表里操作记录详情
+#获取list列表里TxID操作记录
 #======================================================================
 echo "GET query chaincode TxRecorder on peer1 of Org1"
 echo
